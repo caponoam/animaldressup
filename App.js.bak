@@ -1,0 +1,750 @@
+import { StatusBar } from 'expo-status-bar';
+
+
+import { StyleSheet, Text, View, Image, TouchableOpacity, Dimensions, Alert } from 'react-native';
+import { useState, useCallback } from 'react';
+import { LinearGradient } from 'expo-linear-gradient';
+import { GestureHandlerRootView } from 'react-native-gesture-handler'; // IMPORTED
+import AnimalPicker from './components/AnimalPicker';
+import SlidingDrawer from './components/SlidingDrawer';
+import DraggableAccessor from './components/DraggableAccessor';
+import SaveModal from './components/SaveModal';
+import SavedOutfitsList from './components/SavedOutfitsList';
+
+// DATA DEFINITIONS
+const backgrounds = [
+  { id: 'park', source: require('./assets/backgrounds/park.png'), name: 'Park' },
+  { id: 'bedroom', source: require('./assets/backgrounds/bedroom.png'), name: 'Bedroom' },
+  { id: 'ski_slope', source: require('./assets/backgrounds/ski_slope.png'), name: 'Ski Slope' },
+  { id: 'supermarket', source: require('./assets/backgrounds/supermarket.png'), name: 'Supermarket' },
+  { id: 'basketball_court', source: require('./assets/backgrounds/basketball_court.png'), name: 'Court' },
+  { id: 'none', source: null, name: 'None' },
+];
+
+const hats = [
+  { id: 'fedora', type: 'hat', source: require('./assets/clothes/hats/fedora.png'), name: 'Fedora' },
+];
+
+const glasses = [
+  { id: 'sun_glasses', type: 'glasses', source: require('./assets/clothes/accessories/sunglasses.png'), name: 'Sunglasses' },
+];
+
+const jewelry = [
+  // Placeholder for now
+];
+
+const tops = [
+  { id: 'red_shirt', type: 'top', source: require('./assets/clothes/tops/red_shirt.png'), name: 'Red Shirt' },
+];
+
+const bottoms = [
+  // Placeholder
+];
+
+const shoes = [
+  // Placeholder
+];
+
+
+// Screen Center Helpers
+const { width, height } = Dimensions.get('window');
+const STICKER_SIZE = 300;
+const CENTER_X = (width * 0.95) / 2 - 75; // 95% width container / 2 - half sticker size
+const CENTER_Y = (height * 0.95) / 2 - 75;
+
+export default function App() {
+  const [selectedAnimal, setSelectedAnimal] = useState(null);
+  const [selectedAnimalId, setSelectedAnimalId] = useState(null); // Track ID for heuristics
+  const [currentScreen, setCurrentScreen] = useState('selection'); // 'selection' | 'dressup'
+
+  // HISTORY STATE
+  // Each history item: { outfit: { hat: { source, x, y, scale }, ... }, background: ... }
+  const [history, setHistory] = useState([
+    { outfit: { hat: null, glasses: null, jewelry: null, top: null, bottoms: null, shoes: null }, background: null }
+  ]);
+  const [historyIndex, setHistoryIndex] = useState(0);
+
+  // SAVE / LOAD STATE
+  const [savedOutfits, setSavedOutfits] = useState([]);
+  const [isSaveModalVisible, setIsSaveModalVisible] = useState(false);
+
+  // Derived current state from history
+  const currentOutfit = history[historyIndex].outfit;
+  const currentBackground = history[historyIndex].background;
+
+  const addToHistory = (newOutfit, newBackground) => {
+    const newSnapshot = {
+      outfit: newOutfit !== undefined ? newOutfit : currentOutfit,
+      background: newBackground !== undefined ? newBackground : currentBackground
+    };
+
+    // NOTE: In a real app we might debounce drag updates, but for now we save on release
+    const nextHistory = history.slice(0, historyIndex + 1);
+    nextHistory.push(newSnapshot);
+    setHistory(nextHistory);
+    setHistoryIndex(nextHistory.length - 1);
+  };
+
+  const undo = () => {
+    if (historyIndex > 0) {
+      setHistoryIndex(historyIndex - 1);
+    }
+  };
+
+  const redo = () => {
+    if (historyIndex < history.length - 1) {
+      setHistoryIndex(historyIndex + 1);
+    }
+  };
+
+  // CONSTANTS
+  const SHIRT_BASE_WIDTH = 240; // The pixel width of the shirt asset at 1.0 scale
+  const SHIRT_BASE_HEIGHT = 200; // The pixel height of the shirt asset at 1.0 scale
+
+  // HEURISTIC FITS (Base size: 300px)
+  // torso: { width: target width px, height: target height px, y: center y offset }
+  const ANIMAL_FITS = {
+    bear: {
+      torso: { width: 260, height: 200, y: 110 }, // Wide and short
+      hat: { y: -150, scale: 0.5 },
+      glasses: { y: -50, scale: 0.5 },
+    },
+    bunny: {
+      torso: { width: 140, height: 180, y: 120 }, // Thin and tall
+      hat: { y: -180, scale: 0.4 },
+      glasses: { y: -40, scale: 0.4 },
+    },
+    cat: {
+      torso: { width: 160, height: 160, y: 110 }, // Boxier
+      hat: { y: -140, scale: 0.45 },
+      glasses: { y: -50, scale: 0.45 },
+    },
+    dog: {
+      torso: { width: 180, height: 170, y: 110 },
+      hat: { y: -140, scale: 0.48 },
+      glasses: { y: -55, scale: 0.42 },
+    },
+    mouse: {
+      torso: { width: 120, height: 120, y: 100 }, // Small square
+      hat: { y: -140, scale: 0.35 },
+      glasses: { y: -40, scale: 0.35 },
+    },
+    monkey: {
+      torso: { width: 150, height: 180, y: 110 }, // Lanky
+      hat: { y: -140, scale: 0.45 },
+      glasses: { y: -55, scale: 0.4 },
+    },
+    capybara: {
+      torso: { width: 220, height: 160, y: 110 }, // Very boxy/wide
+      hat: { y: -120, scale: 0.5 },
+      glasses: { y: -50, scale: 0.5 },
+    },
+    owl: {
+      torso: { width: 160, height: 160, y: 130 }, // Round
+      hat: { y: -130, scale: 0.4 },
+      glasses: { y: -50, scale: 0.4 },
+    },
+    penguin: {
+      torso: { width: 180, height: 220, y: 120 }, // Tall oval
+      hat: { y: -140, scale: 0.42 },
+      glasses: { y: -60, scale: 0.4 },
+    },
+  };
+
+  const getInitialTransform = (type) => {
+    const animalFit = ANIMAL_FITS[selectedAnimalId] || { y: 0, hat: { y: -100, scale: 0.5 }, glasses: { y: -30, scale: 0.5 }, torso: { width: 240, height: 200, y: 50 } };
+
+    // Initial Scale & Position based on type
+    let scaleX = animalFit[type]?.scale || 0.5; // Default scale
+    let scaleY = animalFit[type]?.scale || 0.5; // Default scale
+    let yOffset = animalFit[type]?.y || 0;
+
+    if (type === 'top') {
+      // Pixel Perfect Stretch
+      scaleX = animalFit.torso.width / SHIRT_BASE_WIDTH;
+      scaleY = animalFit.torso.height / SHIRT_BASE_HEIGHT;
+      yOffset = animalFit.torso.y;
+    } else if (type === 'jewelry') {
+      yOffset = animalFit.torso.y - 30; // Neck area
+      scaleX = 0.4;
+      scaleY = 0.4;
+    } else if (type === 'bottoms') {
+      yOffset = animalFit.torso.y + 100; // Lower body
+      scaleX = 0.5;
+      scaleY = 0.5;
+    } else if (type === 'shoes') {
+      yOffset = animalFit.torso.y + 180; // Feet area
+      scaleX = 0.4;
+      scaleY = 0.4;
+    }
+
+    return {
+      x: CENTER_X,
+      y: CENTER_Y + yOffset,
+      scaleX,
+      scaleY,
+      rotation: 0,
+    };
+  };
+
+  const toggleAccessory = (type, source) => {
+    const newOutfit = { ...currentOutfit };
+
+    if (newOutfit[type]?.source === source) {
+      newOutfit[type] = null; // Toggle off
+    } else {
+      const transform = getInitialTransform(type);
+      newOutfit[type] = {
+        source,
+        x: transform.x,
+        y: transform.y,
+        scaleX: transform.scaleX,
+        scaleY: transform.scaleY,
+        rotation: transform.rotation
+      };
+    }
+
+    addToHistory(newOutfit, undefined);
+  };
+
+  const updateAccessoryTransform = (type, x, y, scaleX, scaleY, rotation) => {
+    const newOutfit = { ...currentOutfit };
+    if (!newOutfit[type]) return;
+
+    // MAGNETIC SNAP LOGIC 🧲
+    let finalX = x;
+    let finalY = y;
+
+    // Check if we have an anchor for this animal/type
+    if (selectedAnimalId && ANIMAL_FITS[selectedAnimalId]) {
+      const animalData = ANIMAL_FITS[selectedAnimalId];
+      let anchorY = null;
+      let anchorScale = null;
+
+      if (type === 'top' && animalData.torso) {
+        anchorY = animalData.torso.y;
+      } else if (animalData[type]) {
+        anchorY = animalData[type].y;
+      } else if (type === 'jewelry' && animalData.torso) {
+        anchorY = animalData.torso.y - 30;
+      } else if (type === 'bottoms' && animalData.torso) {
+        anchorY = animalData.torso.y + 100;
+      } else if (type === 'shoes' && animalData.torso) {
+        anchorY = animalData.torso.y + 180;
+      }
+
+      if (anchorY !== null) {
+        const targetX = CENTER_X; // X is always centered in our heuristic
+        const targetY = CENTER_Y + anchorY;
+
+        // Calculate distance
+        const dist = Math.sqrt(Math.pow(x - targetX, 2) + Math.pow(y - targetY, 2));
+
+        // Threshold: 100px (very generous snap radius)
+        if (dist < 100) {
+          finalX = targetX;
+          finalY = targetY;
+        }
+      }
+    }
+
+    newOutfit[type] = { ...newOutfit[type], x: finalX, y: finalY, scaleX, scaleY, rotation };
+    addToHistory(newOutfit, undefined);
+  };
+
+  const setBackground = (source) => {
+    addToHistory(undefined, source);
+  };
+
+  const resetOutfit = () => {
+    Alert.alert(
+      "Reset Outfit?",
+      "Are you sure you want to delete all changes?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel"
+        },
+        {
+          text: "Yes",
+          onPress: () => addToHistory({ hat: null, glasses: null, jewelry: null, top: null, bottoms: null, shoes: null }, null),
+          style: "destructive"
+        }
+      ]
+    );
+  };
+
+  const handleSaveOutfit = (name) => {
+    const newSavedOutfit = {
+      id: Date.now().toString(),
+      name,
+      animal: selectedAnimal,
+      animalId: selectedAnimalId,
+      outfit: currentOutfit,
+      background: currentBackground,
+      date: new Date().toISOString(),
+    };
+    setSavedOutfits([newSavedOutfit, ...savedOutfits]);
+  };
+
+  const handleLoadOutfit = (savedOutfit) => {
+    setSelectedAnimal(savedOutfit.animal);
+    setSelectedAnimalId(savedOutfit.animalId);
+
+    // Reset history to this point
+    setHistory([{ outfit: savedOutfit.outfit, background: savedOutfit.background }]);
+    setHistoryIndex(0);
+
+    setCurrentScreen('dressup');
+  };
+
+  const handleDressUpPress = () => {
+    if (selectedAnimal) {
+      setCurrentScreen('dressup');
+    }
+  };
+
+  const handleBackPress = () => {
+    setCurrentScreen('selection');
+  };
+
+  // Helper for checking selection in drawer
+  const isSelected = (type, source) => {
+    return currentOutfit[type] && currentOutfit[type].source === source;
+  }
+
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <LinearGradient
+        colors={['#89f7fe', '#66a6ff']} // Vibrant Sky Blue Gradient
+        style={styles.container}
+      >
+
+        {/* SCREEN 1: SELECTION */}
+        {currentScreen === 'selection' && (
+          <View style={styles.screenContainer}>
+            <Text style={styles.title}>Pick Your Pal!</Text>
+
+            <View style={styles.previewContainer}>
+              {selectedAnimal ? (
+                <View style={styles.cardGlow}>
+                  <Image source={selectedAnimal} style={styles.previewImage} />
+                </View>
+              ) : (
+                <View style={styles.placeholderBox}>
+                  <Text style={styles.placeholderText}>?</Text>
+                </View>
+              )}
+            </View>
+
+            <View style={{ height: 220 }}>
+              <AnimalPicker
+                selectedAnimal={selectedAnimal}
+                onSelectAnimal={(animal) => {
+                  if (animal.id !== selectedAnimalId) {
+                    // Auto-reset clothes for the new animal
+                    addToHistory({ hat: null, glasses: null, jewelry: null, top: null, bottoms: null, shoes: null }, undefined);
+                  }
+                  setSelectedAnimal(animal.source);
+                  setSelectedAnimalId(animal.id);
+                }}
+              />
+            </View>
+
+            <TouchableOpacity
+              style={[styles.button, !selectedAnimal && styles.buttonDisabled]}
+              onPress={handleDressUpPress}
+              activeOpacity={0.8}
+              disabled={!selectedAnimal}
+            >
+              <Text style={styles.buttonText}>Dress 'Em Up!</Text>
+            </TouchableOpacity>
+
+            <SavedOutfitsList savedOutfits={savedOutfits} onLoad={handleLoadOutfit} />
+          </View>
+        )}
+
+        {/* SCREEN 2: DRESS UP (FULL SCREEN MODE) */}
+        {currentScreen === 'dressup' && (
+          <View style={styles.fullScreenContainer}>
+
+            {/* BACKGROUND LAYER */}
+            {currentBackground && (
+              <Image source={currentBackground} style={styles.backgroundImage} />
+            )}
+
+            <View style={styles.headerAbsolute}>
+              <TouchableOpacity onPress={handleBackPress} style={styles.backButton}>
+                <Text style={styles.backButtonText}>← Back</Text>
+              </TouchableOpacity>
+
+              {/* UNDO / REDO CONTROLS */}
+              <View style={styles.historyControls}>
+                <TouchableOpacity
+                  onPress={undo}
+                  disabled={historyIndex === 0}
+                  style={[styles.controlButton, { backgroundColor: '#FFE66D' }, historyIndex === 0 && styles.controlDisabled]}
+                >
+                  <Text style={styles.controlText}>↩️</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={redo}
+                  disabled={historyIndex === history.length - 1}
+                  style={[styles.controlButton, { backgroundColor: '#4ECDC4' }, historyIndex === history.length - 1 && styles.controlDisabled]}
+                >
+                  <Text style={styles.controlText}>↪️</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={resetOutfit}
+                  style={[styles.controlButton, { backgroundColor: '#FF6B6B' }]}
+                >
+                  <Text style={styles.controlText}>🗑️</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => setIsSaveModalVisible(true)}
+                  style={[styles.controlButton, { backgroundColor: '#4D96FF' }]}
+                >
+                  <Text style={styles.controlText}>💾</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* DRAWER 1: BACKGROUNDS */}
+            <SlidingDrawer
+              title="Sights"
+              data={backgrounds}
+              onSelect={(item) => setBackground(item.source)}
+              selectedItem={currentBackground}
+              tabIcon="🎨"
+              topOffset={100}
+              color="#FF6B6B"
+              zIndex={30}
+            />
+
+            {/* DRAWER 2: HATS */}
+            <SlidingDrawer
+              title="Hats"
+              data={hats}
+              onSelect={(item) => toggleAccessory(item.type, item.source)}
+              checkSelected={(item) => isSelected(item.type, item.source)}
+              tabIcon="🎩"
+              topOffset={190}
+              color="#4ECDC4"
+              zIndex={20}
+            />
+
+            {/* DRAWER 3: GLASSES */}
+            <SlidingDrawer
+              title="Glasses"
+              data={glasses}
+              onSelect={(item) => toggleAccessory(item.type, item.source)}
+              checkSelected={(item) => isSelected(item.type, item.source)}
+              tabIcon="👓"
+              topOffset={280}
+              color="#FFE66D"
+              zIndex={10}
+            />
+
+            {/* DRAWER 4: JEWELRY */}
+            <SlidingDrawer
+              title="Jewelry"
+              data={jewelry}
+              onSelect={(item) => toggleAccessory(item.type, item.source)}
+              checkSelected={(item) => isSelected(item.type, item.source)}
+              tabIcon="💎"
+              topOffset={370}
+              color="#A0D9B4"
+              zIndex={9}
+            />
+
+            {/* DRAWER 5: TOPS */}
+            <SlidingDrawer
+              title="Tops"
+              data={tops}
+              onSelect={(item) => toggleAccessory(item.type, item.source)}
+              checkSelected={(item) => isSelected(item.type, item.source)}
+              tabIcon="👕"
+              topOffset={460}
+              color="#6A8EAE"
+              zIndex={8}
+            />
+
+            {/* DRAWER 6: BOTTOMS */}
+            <SlidingDrawer
+              title="Bottoms"
+              data={bottoms}
+              onSelect={(item) => toggleAccessory(item.type, item.source)}
+              checkSelected={(item) => isSelected(item.type, item.source)}
+              tabIcon="👖"
+              topOffset={550}
+              color="#E0BBE4"
+              zIndex={7}
+            />
+
+            {/* DRAWER 7: SHOES */}
+            <SlidingDrawer
+              title="Shoes"
+              data={shoes}
+              onSelect={(item) => toggleAccessory(item.type, item.source)}
+              checkSelected={(item) => isSelected(item.type, item.source)}
+              tabIcon="👟"
+              topOffset={640}
+              color="#957DAD"
+              zIndex={6}
+            />
+
+            {/* Main Display Area - MAXIMIZED */}
+            <View style={styles.maximizedDisplayArea}>
+              <View style={styles.layerContainer}>
+                {/* Base Animal - Still static center */}
+                <Image source={selectedAnimal} style={styles.maximizedImage} />
+
+                {/* Draggable Layers (Render order matters for z-index) */}
+                {currentOutfit.shoes && (
+                  <DraggableAccessor
+                    source={currentOutfit.shoes.source}
+                    initialX={currentOutfit.shoes.x}
+                    initialY={currentOutfit.shoes.y}
+                    initialScaleX={currentOutfit.shoes.scaleX}
+                    initialScaleY={currentOutfit.shoes.scaleY}
+                    initialRotation={currentOutfit.shoes.rotation}
+                    onDragEnd={(pos) => updateAccessoryTransform('shoes', pos.x, pos.y, pos.scaleX, pos.scaleY, pos.rotation)}
+                  />
+                )}
+                {currentOutfit.bottoms && (
+                  <DraggableAccessor
+                    source={currentOutfit.bottoms.source}
+                    initialX={currentOutfit.bottoms.x}
+                    initialY={currentOutfit.bottoms.y}
+                    initialScaleX={currentOutfit.bottoms.scaleX}
+                    initialScaleY={currentOutfit.bottoms.scaleY}
+                    initialRotation={currentOutfit.bottoms.rotation}
+                    onDragEnd={(pos) => updateAccessoryTransform('bottoms', pos.x, pos.y, pos.scaleX, pos.scaleY, pos.rotation)}
+                  />
+                )}
+                {currentOutfit.top && (
+                  <DraggableAccessor
+                    source={currentOutfit.top.source}
+                    initialX={currentOutfit.top.x}
+                    initialY={currentOutfit.top.y}
+                    initialScaleX={currentOutfit.top.scaleX}
+                    initialScaleY={currentOutfit.top.scaleY}
+                    initialRotation={currentOutfit.top.rotation}
+                    onDragEnd={(pos) => updateAccessoryTransform('top', pos.x, pos.y, pos.scaleX, pos.scaleY, pos.rotation)}
+                  />
+                )}
+                {currentOutfit.jewelry && (
+                  <DraggableAccessor
+                    source={currentOutfit.jewelry.source}
+                    initialX={currentOutfit.jewelry.x}
+                    initialY={currentOutfit.jewelry.y}
+                    initialScaleX={currentOutfit.jewelry.scaleX}
+                    initialScaleY={currentOutfit.jewelry.scaleY}
+                    initialRotation={currentOutfit.jewelry.rotation}
+                    onDragEnd={(pos) => updateAccessoryTransform('jewelry', pos.x, pos.y, pos.scaleX, pos.scaleY, pos.rotation)}
+                  />
+                )}
+                {currentOutfit.glasses && (
+                  <DraggableAccessor
+                    source={currentOutfit.glasses.source}
+                    initialX={currentOutfit.glasses.x}
+                    initialY={currentOutfit.glasses.y}
+                    initialScaleX={currentOutfit.glasses.scaleX}
+                    initialScaleY={currentOutfit.glasses.scaleY}
+                    initialRotation={currentOutfit.glasses.rotation}
+                    onDragEnd={(pos) => updateAccessoryTransform('glasses', pos.x, pos.y, pos.scaleX, pos.scaleY, pos.rotation)}
+                  />
+                )}
+                {currentOutfit.hat && (
+                  <DraggableAccessor
+                    source={currentOutfit.hat.source}
+                    initialX={currentOutfit.hat.x}
+                    initialY={currentOutfit.hat.y}
+                    initialScaleX={currentOutfit.hat.scaleX}
+                    initialScaleY={currentOutfit.hat.scaleY}
+                    initialRotation={currentOutfit.hat.rotation}
+                    onDragEnd={(pos) => updateAccessoryTransform('hat', pos.x, pos.y, pos.scaleX, pos.scaleY, pos.rotation)}
+                  />
+                )}
+              </View>
+            </View>
+          </View>
+        )}
+
+        <StatusBar style="light" />
+
+        <SaveModal
+          visible={isSaveModalVisible}
+          onClose={() => setIsSaveModalVisible(false)}
+          onSave={handleSaveOutfit}
+        />
+      </LinearGradient>
+    </GestureHandlerRootView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  screenContainer: {
+    flex: 1,
+    alignItems: 'center',
+    width: '100%',
+    paddingTop: 80,
+  },
+  title: {
+    fontSize: 56,
+    fontWeight: '900',
+    color: 'white',
+    marginBottom: 20,
+    textAlign: 'center',
+    textShadowColor: 'rgba(0,0,0,0.3)',
+    textShadowOffset: { width: 2, height: 2 },
+    textShadowRadius: 5,
+    fontFamily: 'sans-serif-rounded', // Trying a rounded font if available
+  },
+  // Full Screen Mode
+  fullScreenContainer: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
+  backgroundImage: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  headerAbsolute: {
+    position: 'absolute',
+    top: 60,
+    left: 20, // Slightly more left
+    zIndex: 10,
+  },
+  backButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 18,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    borderRadius: 25,
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  backButtonText: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#66a6ff',
+  },
+  historyControls: {
+    flexDirection: 'row',
+    marginTop: 15,
+    gap: 12,
+  },
+  controlButton: {
+    width: 60, // Bigger
+    height: 60, // Bigger
+    borderRadius: 30, // Fully round
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 6,
+    borderWidth: 3,
+    borderColor: 'white',
+  },
+  controlDisabled: {
+    opacity: 0.4,
+    backgroundColor: '#ccc',
+  },
+  controlText: {
+    fontSize: 28,
+  },
+  maximizedDisplayArea: {
+    flex: 1,
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  maximizedImage: {
+    width: '95%',
+    height: '95%',
+    resizeMode: 'contain',
+  },
+  accessoryLayerMax: {
+    position: 'absolute',
+    width: '95%',
+    height: '95%',
+    resizeMode: 'contain',
+  },
+
+  // ... Shared Styles ...
+  // Screen 1 Styles
+  previewContainer: {
+    height: 320,
+    justifyContent: 'center',
+    marginTop: 10,
+    marginBottom: 30,
+  },
+  cardGlow: {
+    shadowColor: 'white',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  previewImage: {
+    width: 300,
+    height: 300,
+    resizeMode: 'contain',
+  },
+  placeholderBox: {
+    width: 260,
+    height: 260,
+    borderRadius: 130,
+    backgroundColor: 'rgba(255,255,255,0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 6,
+    borderColor: 'white',
+    borderStyle: 'dashed',
+  },
+  placeholderText: {
+    color: 'white',
+    fontSize: 100,
+    fontWeight: 'bold',
+  },
+  button: {
+    backgroundColor: '#FF6B6B', // Fun coral color
+    paddingVertical: 20,
+    paddingHorizontal: 60,
+    borderRadius: 50,
+    marginTop: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 5,
+  },
+  buttonDisabled: {
+    backgroundColor: '#ccc',
+    shadowOpacity: 0,
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 32,
+    fontWeight: 'bold',
+  },
+  layerContainer: {
+    width: '100%',
+    height: '100%',
+    position: 'relative',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});

@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "temp_app",
-    "slug": "temp_app",
-    "version": "1.0.0",
+    "name": "Dress it up!",
+    "slug": "dress-it-up",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -20,7 +20,8 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.anonymous.dressitup"
     },
     "web": {
       "favicon": "./assets/favicon.png"

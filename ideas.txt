@@ -1,0 +1,39 @@
+Fit the accessories, clothes, etc better to the animal better    
+apply clothes and accessories to the animal properly 
+
+Drawers can't hide each other
+
+add about page with ? icon bottom left corner with app name, version, credits, and simple usage details
+
+nicer looking buttons
+
+[Storage] Save edits for future use/edit (prompt for name of edit, save to file)
+
+
+Gems (in app currency)
+Gem "jar"
+
+Poses chooser
+about page crediting Uma
+Version number
+History of edited animals
+Easter eggs
+
+app name: Animal Dress Up
+app icon: ?
+build apk
+
+
+============================================================
+======================== DONE ========================
+============================================================
+UNDO and REDO Buttons
+apply Background
+Clear all/reset button
+Turn the Animal picker into a carousel, add 5 more animals (mouse, monkey, capybara, owl, penguin)
+when selecting a NEW animal, reset the clothes and accessories
+For the gallery view of saved outfits, show the animal in the outfit
+
+Ask before deleting all changes (are you sure you want to delete all changes?)
+
+drag items already on the animal to trash to remove them

@@ -1,0 +1,183 @@
+import React, { useState, useRef } from 'react';
+import { View, TouchableOpacity, Image, StyleSheet, Animated, Text } from 'react-native';
+
+const DRAWER_WIDTH = 160;
+
+export default function SlidingDrawer({
+    data,
+    onSelect,
+    selectedItem,
+    tabIcon,
+    title,
+    topOffset,
+    isMulti = false,
+    checkSelected,
+    color = '#FF6B6B',
+    zIndex = 100 // Default zIndex
+}) {
+    const [isOpen, setIsOpen] = useState(false);
+    const slideAnim = useRef(new Animated.Value(DRAWER_WIDTH)).current;
+
+    const toggleDrawer = () => {
+        const toValue = isOpen ? DRAWER_WIDTH : 0;
+
+        Animated.spring(slideAnim, {
+            toValue,
+            useNativeDriver: true,
+            bounciness: 10,
+        }).start();
+
+        setIsOpen(!isOpen);
+    };
+
+    const isSelected = (item) => {
+        if (checkSelected) return checkSelected(item);
+        if (!selectedItem) return false;
+        return selectedItem === item.source;
+    };
+
+    return (
+        <Animated.View
+            style={[
+                styles.container,
+                {
+                    top: topOffset,
+                    transform: [{ translateX: slideAnim }],
+                    zIndex: zIndex // Apply zIndex here
+                }
+            ]}
+        >
+            {/* TAB */}
+            <TouchableOpacity
+                onPress={toggleDrawer}
+                style={[styles.tab, { backgroundColor: color }]}
+                activeOpacity={0.8}
+            >
+                <Text style={styles.tabText}>{isOpen ? '→' : tabIcon}</Text>
+            </TouchableOpacity>
+
+            {/* DRAWER CONTENT */}
+            <View style={styles.drawerContent}>
+                <Text style={[styles.title, { color }]}>{title}</Text>
+                <View style={styles.grid}>
+                    {data.map((item) => {
+                        const active = isSelected(item);
+                        return (
+                            <TouchableOpacity
+                                key={item.id}
+                                style={[
+                                    styles.thumbnailContainer,
+                                    active && { borderColor: color, backgroundColor: 'rgba(255,255,255,0.8)' }
+                                ]}
+                                onPress={() => onSelect(item)}
+                            >
+                                {item.source ? (
+                                    <Image source={item.source} style={styles.thumbnail} />
+                                ) : (
+                                    <View style={[styles.thumbnail, styles.nonePlaceholder]}><Text style={styles.noneText}>🚫</Text></View>
+                                )}
+                                <Text style={styles.label} numberOfLines={1}>{item.name}</Text>
+                            </TouchableOpacity>
+                        );
+                    })}
+                </View>
+            </View>
+        </Animated.View>
+    );
+}
+
+const styles = StyleSheet.create({
+    container: {
+        position: 'absolute',
+        right: 0,
+        width: DRAWER_WIDTH,
+        flexDirection: 'row',
+        direction: 'ltr', // FORCE LTR for RTL device support
+        // zIndex removed from static style, applied via prop
+        alignItems: 'flex-start',
+        height: 'auto', // Allow it to shrink/grow
+    },
+    tab: {
+        width: 70, // Bigger
+        height: 70, // Bigger
+        borderTopLeftRadius: 35, // Rounder
+        borderBottomLeftRadius: 35,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginLeft: -70, // Aligned
+        shadowColor: '#000',
+        shadowOpacity: 0.2,
+        shadowRadius: 3,
+        elevation: 4,
+        borderLeftWidth: 2,
+        borderTopWidth: 2,
+        borderBottomWidth: 2,
+        borderColor: 'rgba(255,255,255,0.3)',
+        marginTop: 10,
+    },
+    tabText: {
+        fontSize: 32, // Bigger Icon
+        color: 'white',
+        textShadowColor: 'rgba(0,0,0,0.2)',
+        textShadowOffset: { width: 1, height: 1 },
+        textShadowRadius: 2,
+    },
+    drawerContent: {
+        flex: 1,
+        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+        padding: 10,
+        borderTopLeftRadius: 20,
+        borderBottomLeftRadius: 20,
+        elevation: 10,
+        shadowColor: '#000',
+        shadowOpacity: 0.25,
+        shadowOffset: { width: -4, height: 4 },
+        // removed fixed height
+        minHeight: 100,
+        borderWidth: 1,
+        borderColor: '#fff',
+    },
+    title: {
+        fontWeight: '900',
+        marginBottom: 10,
+        textAlign: 'center',
+        fontSize: 16, // Slightly smaller
+        textTransform: 'uppercase',
+        letterSpacing: 1,
+    },
+    grid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'center',
+        gap: 10,
+    },
+    thumbnailContainer: {
+        alignItems: 'center',
+        padding: 5,
+        borderRadius: 12,
+        borderWidth: 3,
+        borderColor: 'transparent',
+        backgroundColor: '#f5f5f5',
+        width: 70,
+    },
+    thumbnail: {
+        width: 50,
+        height: 50,
+        resizeMode: 'contain',
+        marginBottom: 4,
+    },
+    nonePlaceholder: {
+        backgroundColor: '#eee',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 10,
+    },
+    noneText: {
+        fontSize: 24,
+    },
+    label: {
+        fontSize: 10,
+        fontWeight: 'bold',
+        color: '#555',
+    },
+});
