@@ -11,6 +11,9 @@ const BASE_ANIMALS = [
     { id: 'capybara', source: require('../assets/animals/capybara.png') },
     { id: 'owl', source: require('../assets/animals/owl.png') },
     { id: 'penguin', source: require('../assets/animals/penguin.png') },
+    { id: 'lion', source: require('../assets/animals/lion.png') },
+    { id: 'giraffe', source: require('../assets/animals/giraffe.png') },
+    { id: 'tiger', source: require('../assets/animals/tiger.png') },
 ];
 
 const ITEM_WIDTH = 140;

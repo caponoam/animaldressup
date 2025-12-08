@@ -27,6 +27,7 @@ const hats = [
   { id: 'baseball_cap', type: 'hat', source: require('./assets/clothes/hats/baseball_cap.png'), name: 'Cap' },
   { id: 'winter_beanie', type: 'hat', source: require('./assets/clothes/hats/winter_beanie.png'), name: 'Beanie' },
   { id: 'cowboy_hat', type: 'hat', source: require('./assets/clothes/hats/cowboy_hat.png'), name: 'Cowboy' },
+  { id: 'top_hat', type: 'hat', source: require('./assets/clothes/hats/top_hat.png'), name: 'Top Hat' },
 ];
 
 const glasses = [
@@ -40,6 +41,11 @@ const jewelry = [
   { id: 'hoop_earrings', type: 'jewelry', source: require('./assets/clothes/jewelry/hoop_earrings.png'), name: 'Hoops' },
   { id: 'heart_necklace', type: 'jewelry', source: require('./assets/clothes/jewelry/heart_necklace.png'), name: 'Necklace' },
   { id: 'gold_watch', type: 'jewelry', source: require('./assets/clothes/jewelry/gold_watch.png'), name: 'Watch' },
+];
+
+const neckwear = [
+  { id: 'scarf', type: 'neckwear', source: require('./assets/clothes/neckwear/scarf.png'), name: 'Scarf' },
+  { id: 'bow_tie', type: 'neckwear', source: require('./assets/clothes/neckwear/bow_tie.png'), name: 'Bow Tie' },
 ];
 
 const tops = [
@@ -56,6 +62,7 @@ const bottoms = [
 const shoes = [
   { id: 'red_sneaker', type: 'shoes', source: require('./assets/clothes/shoes/red_sneaker.png'), name: 'Red Sneaker' },
   { id: 'flip_flop', type: 'shoes', source: require('./assets/clothes/shoes/flip_flop.png'), name: 'Flip Flop' },
+  { id: 'dress_shoe', type: 'shoes', source: require('./assets/clothes/shoes/dress_shoe.png'), name: 'Dress Shoe' },
 ];
 
 
@@ -139,7 +146,7 @@ export default function App() {
   // HISTORY STATE
   // Each history item: { outfit: { hat: { source, x, y, scale }, ... }, background: ... }
   const [history, setHistory] = useState([
-    { outfit: { hat: [], glasses: [], jewelry: [], top: [], bottoms: [], shoes: [] }, background: null }
+    { outfit: { hat: [], glasses: [], jewelry: [], neckwear: [], top: [], bottoms: [], shoes: [] }, background: null }
   ]);
   const [historyIndex, setHistoryIndex] = useState(0);
 
@@ -233,6 +240,21 @@ export default function App() {
       hat: { y: -140, scale: 0.35 },
       glasses: { y: -40, scale: 0.35 },
     },
+    lion: {
+      torso: { width: 250, height: 200, y: 110 }, // Big/Wide like bear
+      hat: { y: -150, scale: 0.5 },
+      glasses: { y: -50, scale: 0.5 },
+    },
+    tiger: {
+      torso: { width: 250, height: 200, y: 110 }, // Big/Wide like bear
+      hat: { y: -150, scale: 0.5 },
+      glasses: { y: -50, scale: 0.5 },
+    },
+    giraffe: {
+      torso: { width: 160, height: 250, y: 150 }, // Tall
+      hat: { y: -220, scale: 0.45 }, // Very high head
+      glasses: { y: -120, scale: 0.45 },
+    },
     monkey: {
       torso: { width: 150, height: 180, y: 110 }, // Lanky
       hat: { y: -140, scale: 0.45 },
@@ -270,6 +292,10 @@ export default function App() {
       yOffset = animalFit.torso.y;
     } else if (type === 'jewelry') {
       yOffset = animalFit.torso.y - 30; // Neck area
+      scaleX = 0.4;
+      scaleY = 0.4;
+    } else if (type === 'neckwear') {
+      yOffset = animalFit.torso.y - 20; // Slightly lower on neck
       scaleX = 0.4;
       scaleY = 0.4;
     } else if (type === 'bottoms') {
@@ -389,7 +415,7 @@ export default function App() {
         { text: "Cancel", style: "cancel" },
         {
           text: "Yes",
-          onPress: () => addToHistory({ hat: [], glasses: [], jewelry: [], top: [], bottoms: [], shoes: [] }, null),
+          onPress: () => addToHistory({ hat: [], glasses: [], jewelry: [], neckwear: [], top: [], bottoms: [], shoes: [] }, null),
           style: "destructive"
         }
       ]
@@ -471,7 +497,7 @@ export default function App() {
                 onSelectAnimal={(animal) => {
                   if (animal.id !== selectedAnimalId) {
                     // Auto-reset clothes for the new animal
-                    addToHistory({ hat: [], glasses: [], jewelry: [], top: [], bottoms: [], shoes: [] }, undefined);
+                    addToHistory({ hat: [], glasses: [], jewelry: [], neckwear: [], top: [], bottoms: [], shoes: [] }, undefined);
                   }
                   setSelectedAnimal(animal.source);
                   setSelectedAnimalId(animal.id);
@@ -559,7 +585,7 @@ export default function App() {
               tabIcon="🎨"
               topOffset={100}
               color="#FF6B6B"
-              zIndex={30}
+              zIndex={300}
             />
 
             {/* DRAWER 2: HATS */}
@@ -571,7 +597,7 @@ export default function App() {
               tabIcon="🎩"
               topOffset={190}
               color="#4ECDC4"
-              zIndex={20}
+              zIndex={200}
             />
 
             {/* DRAWER 3: GLASSES */}
@@ -583,7 +609,7 @@ export default function App() {
               tabIcon="👓"
               topOffset={280}
               color="#FFE66D"
-              zIndex={10}
+              zIndex={100}
             />
 
             {/* DRAWER 4: JEWELRY */}
@@ -595,43 +621,55 @@ export default function App() {
               tabIcon="💎"
               topOffset={370}
               color="#A0D9B4"
-              zIndex={9}
+              zIndex={90}
             />
 
-            {/* DRAWER 5: TOPS */}
+            {/* DRAWER 5: NECKWEAR (New) */}
+            <SlidingDrawer
+              title="Neckwear"
+              data={neckwear}
+              onSelect={(item) => toggleAccessory(item.type, item.source)}
+              checkSelected={(item) => isSelected(item.type, item.source)}
+              tabIcon="🧣"
+              topOffset={460}
+              color="#FFCCBC"
+              zIndex={85}
+            />
+
+            {/* DRAWER 6: TOPS (Shifted Down) */}
             <SlidingDrawer
               title="Tops"
               data={tops}
               onSelect={(item) => toggleAccessory(item.type, item.source)}
               checkSelected={(item) => isSelected(item.type, item.source)}
               tabIcon="👕"
-              topOffset={460}
+              topOffset={550}
               color="#6A8EAE"
-              zIndex={8}
+              zIndex={80}
             />
 
-            {/* DRAWER 6: BOTTOMS */}
+            {/* DRAWER 7: BOTTOMS (Shifted Down) */}
             <SlidingDrawer
               title="Bottoms"
               data={bottoms}
               onSelect={(item) => toggleAccessory(item.type, item.source)}
               checkSelected={(item) => isSelected(item.type, item.source)}
               tabIcon="👖"
-              topOffset={550}
+              topOffset={640}
               color="#E0BBE4"
-              zIndex={7}
+              zIndex={70}
             />
 
-            {/* DRAWER 7: SHOES */}
+            {/* DRAWER 8: SHOES (Shifted Down) */}
             <SlidingDrawer
               title="Shoes"
               data={shoes}
               onSelect={(item) => toggleAccessory(item.type, item.source)}
               checkSelected={(item) => isSelected(item.type, item.source)}
               tabIcon="👟"
-              topOffset={640}
+              topOffset={730}
               color="#957DAD"
-              zIndex={6}
+              zIndex={60}
             />
 
             {/* Main Display Area - MAXIMIZED & DRAGGABLE */}
@@ -642,8 +680,8 @@ export default function App() {
                   <Image source={selectedAnimal} style={styles.maximizedImage} />
 
                   {/* Draggable Layers (Render order matters for z-index) */}
-                  {/* Order: Shoes -> Bottoms -> Top -> Jewelry -> Glasses -> Hat */}
-                  {['shoes', 'bottoms', 'top', 'jewelry', 'glasses', 'hat'].map(type =>
+                  {/* Order: Shoes -> Bottoms -> Top -> Neckwear -> Jewelry -> Glasses -> Hat */}
+                  {['shoes', 'bottoms', 'top', 'neckwear', 'jewelry', 'glasses', 'hat'].map(type =>
                     (currentOutfit[type] || []).map(item => (
                       <DraggableAccessor
                         key={item.instanceId}
