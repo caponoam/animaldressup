@@ -92,6 +92,17 @@ const COMPOSITES = {
   'bunny_red_shirt': require('./assets/clothes/tops/bunny_red_shirt_composite.png'),
   'bunny_hawaiian_shirt': require('./assets/clothes/tops/bunny_hawaiian_shirt_composite.png'),
   'bunny_dress_shirt': require('./assets/clothes/tops/bunny_dress_shirt_composite.png'),
+  'capybara_red_shirt': require('./assets/clothes/tops/capybara_red_shirt_composite.png'),
+  'capybara_hawaiian_shirt': require('./assets/clothes/tops/capybara_hawaiian_shirt_composite.png'),
+  'capybara_dress_shirt': require('./assets/clothes/tops/capybara_dress_shirt_composite.png'),
+  'cat_red_shirt': require('./assets/clothes/tops/cat_red_shirt_composite.png'),
+  'cat_hawaiian_shirt': require('./assets/clothes/tops/cat_hawaiian_shirt_composite.png'),
+  'cat_dress_shirt': require('./assets/clothes/tops/cat_dress_shirt_composite.png'),
+  'dog_red_shirt': require('./assets/clothes/tops/dog_red_shirt_composite.png'),
+  'dog_hawaiian_shirt': require('./assets/clothes/tops/dog_hawaiian_shirt_composite.png'),
+  'dog_dress_shirt': require('./assets/clothes/tops/dog_dress_shirt_composite.png'),
+  'giraffe_red_shirt': require('./assets/clothes/tops/giraffe_red_shirt_composite.png'),
+  'giraffe_dress_shirt': require('./assets/clothes/tops/giraffe_dress_shirt_composite.png'),
 };
 
 export default function App() {
