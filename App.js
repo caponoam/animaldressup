@@ -18,6 +18,7 @@ const backgrounds = [
   { id: 'park', source: require('./assets/backgrounds/park.png'), name: 'Park' },
   { id: 'snow', source: require('./assets/backgrounds/snow.png'), name: 'Snow' },
   { id: 'bedroom', source: require('./assets/backgrounds/bedroom.png'), name: 'Bedroom' },
+  { id: 'space', source: require('./assets/backgrounds/space.png'), name: 'Space' },
   { id: 'supermarket', source: require('./assets/backgrounds/supermarket.png'), name: 'Supermarket' },
   { id: 'basketball_court', source: require('./assets/backgrounds/basketball_court.png'), name: 'Court' },
   { id: 'none', source: null, name: 'None' },
@@ -81,6 +82,16 @@ const TRASH_CONFIG = {
   y: 75,  // Align with header row (Top 50 + Half Height 25)
   radius: 40, // Tighter Hit Radius
   visualRadius: 60 // Feedback Radius
+};
+
+// COMPOSITE IMAGES (Animal + Accessor)
+const COMPOSITES = {
+  'bear_red_shirt': require('./assets/clothes/tops/bear_red_shirt_composite.png'),
+  'bear_hawaiian_shirt': require('./assets/clothes/tops/bear_hawaiian_shirt_composite.png'),
+  'bear_dress_shirt': require('./assets/clothes/tops/bear_dress_shirt_composite.png'),
+  'bunny_red_shirt': require('./assets/clothes/tops/bunny_red_shirt_composite.png'),
+  'bunny_hawaiian_shirt': require('./assets/clothes/tops/bunny_hawaiian_shirt_composite.png'),
+  'bunny_dress_shirt': require('./assets/clothes/tops/bunny_dress_shirt_composite.png'),
 };
 
 export default function App() {
@@ -649,29 +660,30 @@ export default function App() {
               zIndex={80}
             />
 
-            {/* DRAWER 7: BOTTOMS (Shifted Down) */}
-            <SlidingDrawer
-              title="Bottoms"
-              data={bottoms}
-              onSelect={(item) => toggleAccessory(item.type, item.source)}
-              checkSelected={(item) => isSelected(item.type, item.source)}
-              tabIcon="👖"
-              topOffset={520}
-              color="#E0BBE4"
-              zIndex={70}
-            />
-
-            {/* DRAWER 8: SHOES (Shifted Down) */}
+            {/* DRAWER 7: SHOES (Shifted Up) */}
             <SlidingDrawer
               title="Shoes"
               data={shoes}
               onSelect={(item) => toggleAccessory(item.type, item.source)}
               checkSelected={(item) => isSelected(item.type, item.source)}
               tabIcon="👟"
-              topOffset={590}
+              topOffset={520}
               color="#957DAD"
+              zIndex={70}
+            />
+
+            {/* DRAWER 8: BOTTOMS (Shifted Down) - HIDDEN FOR NOW
+            <SlidingDrawer
+              title="Bottoms"
+              data={bottoms}
+              onSelect={(item) => toggleAccessory(item.type, item.source)}
+              checkSelected={(item) => isSelected(item.type, item.source)}
+              tabIcon="👖"
+              topOffset={590}
+              color="#E0BBE4"
               zIndex={60}
             />
+            */}
 
             {/* Main Display Area - MAXIMIZED & DRAGGABLE */}
             <View style={styles.maximizedDisplayArea} ref={viewShotRef} collapsable={false}>
@@ -682,19 +694,40 @@ export default function App() {
               <GestureDetector gesture={animalDragGesture}>
                 <Animated.View style={[styles.layerContainer, layerContainerStyle]}>
                   {/* Base Animal - Still static center */}
-                  <Image
-                    source={selectedAnimal}
-                    style={[
-                      styles.maximizedImage,
-                      // Resize specific animals that are too large in the source asset
-                      ['lion', 'tiger', 'giraffe'].includes(selectedAnimalId) && { width: '65%', height: '55%' }
-                    ]}
-                  />
+                  {/* Base Animal OR Composite */}
+                  {(() => {
+                    const currentTop = currentOutfit.top && currentOutfit.top.length > 0 ? currentOutfit.top[currentOutfit.top.length - 1] : null;
+                    const topId = currentTop ? tops.find(t => t.source === currentTop.source)?.id : null;
+                    const compositeKey = `${selectedAnimalId}_${topId}`;
+                    const hasComposite = !!COMPOSITES[compositeKey];
+                    const imageSource = hasComposite ? COMPOSITES[compositeKey] : selectedAnimal;
+
+                    return (
+                      <Image
+                        source={imageSource}
+                        style={[
+                          styles.maximizedImage,
+                          // Resize specific animals that are too large in the source asset
+                          // Apply resize to composites too if needed, but usually composites are tailored.
+                          // Assuming composites are 1:1 with base animals.
+                          ['lion', 'tiger', 'giraffe'].includes(selectedAnimalId) && { width: '65%', height: '55%' }
+                        ]}
+                      />
+                    );
+                  })()}
 
                   {/* Draggable Layers (Render order matters for z-index) */}
                   {/* Order: Shoes -> Bottoms -> Top -> Neckwear -> Jewelry -> Glasses -> Hat */}
-                  {['shoes', 'bottoms', 'top', 'neckwear', 'jewelry', 'glasses', 'hat'].map(type =>
-                    (currentOutfit[type] || []).map(item => (
+                  {['shoes', 'bottoms', 'top', 'neckwear', 'jewelry', 'glasses', 'hat'].map(type => {
+                    // SKIP rendering the 'top' sticker if we are showing a composite for it
+                    if (type === 'top') {
+                      const currentTop = currentOutfit.top && currentOutfit.top.length > 0 ? currentOutfit.top[currentOutfit.top.length - 1] : null;
+                      const topId = currentTop ? tops.find(t => t.source === currentTop.source)?.id : null;
+                      const compositeKey = `${selectedAnimalId}_${topId}`;
+                      if (COMPOSITES[compositeKey]) return null;
+                    }
+
+                    return (currentOutfit[type] || []).map(item => (
                       <DraggableAccessor
                         key={item.instanceId}
                         source={item.source}
@@ -707,7 +740,7 @@ export default function App() {
                         onDragEnd={(pos) => updateAccessoryTransform(type, item.instanceId, pos.x, pos.y, pos.scaleX, pos.scaleY, pos.rotation)}
                       />
                     ))
-                  )}
+                  })}
                 </Animated.View>
               </GestureDetector>
             </View>

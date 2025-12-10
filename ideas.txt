@@ -37,3 +37,11 @@ For the gallery view of saved outfits, show the animal in the outfit
 Ask before deleting all changes (are you sure you want to delete all changes?)
 
 drag items already on the animal to trash to remove them
+
+
+PROMPTS
+
+Composite:
+Combine these two images into a single composite image. The bear should be wearing the hawaiian shirt. 
+The shirt should fit naturally on the bear's torso. Maintenance the exact art style, resolution, and flat vector aesthetic. 
+The output should be the bear dressed in the shirt on a transparent background.
