@@ -1,10 +1,10 @@
 import React, { useState, useRef } from 'react';
-import { View, TouchableOpacity, Image, StyleSheet, Animated, Text, ScrollView, Dimensions } from 'react-native';
+import { View, TouchableOpacity, Image, StyleSheet, Animated, Text, ScrollView, Dimensions, I18nManager } from 'react-native';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import AnimatedReanimated, { useSharedValue, useAnimatedStyle, withSpring, runOnJS } from 'react-native-reanimated';
 
 const DRAWER_WIDTH = 160;
-const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 function DraggableDrawerItem({ item, active, color, onSelect, allowDrag }) {
     const translateX = useSharedValue(0);
@@ -153,7 +153,7 @@ export default function SlidingDrawer({
 const styles = StyleSheet.create({
     container: {
         position: 'absolute',
-        right: 0,
+        left: I18nManager.isRTL ? 0 : SCREEN_WIDTH - DRAWER_WIDTH,
         width: DRAWER_WIDTH,
         flexDirection: 'row',
         direction: 'ltr', // FORCE LTR for RTL device support

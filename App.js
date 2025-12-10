@@ -786,7 +786,7 @@ export default function App() {
           <View style={styles.modalOverlay}>
             <View style={styles.aboutCard}>
               <Text style={styles.aboutTitle}>Dress It Up! 🐻</Text>
-              <Text style={styles.aboutVersion}>v1.1.0</Text>
+              <Text style={styles.aboutVersion}>v1.2.0</Text>
 
               <Text style={styles.aboutSection}>Created by:</Text>
               <Text style={styles.aboutText}>Uma Wolf</Text>
@@ -890,6 +890,7 @@ const styles = StyleSheet.create({
     top: 50, // Safe area
     left: 0,
     width: '100%',
+    direction: 'ltr', // Fix for RTL devices: Force LTR layout so buttons stay on Left
     paddingLeft: 20, // Left Push
     flexDirection: 'row',
     alignItems: 'center',
@@ -1103,5 +1104,5 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 18,
     fontWeight: 'bold',
-  }
+  },
 });
