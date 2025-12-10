@@ -103,6 +103,9 @@ const COMPOSITES = {
   'dog_dress_shirt': require('./assets/clothes/tops/dog_dress_shirt_composite.png'),
   'giraffe_red_shirt': require('./assets/clothes/tops/giraffe_red_shirt_composite.png'),
   'giraffe_dress_shirt': require('./assets/clothes/tops/giraffe_dress_shirt_composite.png'),
+  'mouse_red_shirt': require('./assets/clothes/tops/mouse_red_shirt_composite.png'),
+  'mouse_hawaiian_shirt': require('./assets/clothes/tops/mouse_hawaiian_shirt_composite.png'),
+  'mouse_dress_shirt': require('./assets/clothes/tops/mouse_dress_shirt_composite.png'),
 };
 
 export default function App() {
