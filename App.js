@@ -101,8 +101,7 @@ const COMPOSITES = {
   'dog_red_shirt': require('./assets/clothes/tops/dog_red_shirt_composite.png'),
   'dog_hawaiian_shirt': require('./assets/clothes/tops/dog_hawaiian_shirt_composite.png'),
   'dog_dress_shirt': require('./assets/clothes/tops/dog_dress_shirt_composite.png'),
-  'giraffe_red_shirt': require('./assets/clothes/tops/giraffe_red_shirt_composite.png'),
-  'giraffe_dress_shirt': require('./assets/clothes/tops/giraffe_dress_shirt_composite.png'),
+
   'mouse_red_shirt': require('./assets/clothes/tops/mouse_red_shirt_composite.png'),
   'mouse_hawaiian_shirt': require('./assets/clothes/tops/mouse_hawaiian_shirt_composite.png'),
   'mouse_dress_shirt': require('./assets/clothes/tops/mouse_dress_shirt_composite.png'),
@@ -112,6 +111,12 @@ const COMPOSITES = {
   'tiger_red_shirt': require('./assets/clothes/tops/tiger_red_shirt_composite.png'),
   'tiger_hawaiian_shirt': require('./assets/clothes/tops/tiger_hawaiian_shirt_composite.png'),
   'tiger_dress_shirt': require('./assets/clothes/tops/tiger_dress_shirt_composite.png'),
+  'lion_red_shirt': require('./assets/clothes/tops/lion_red_shirt_composite.png'),
+  'lion_hawaiian_shirt': require('./assets/clothes/tops/lion_hawaiian_shirt_composite.png'),
+  'lion_dress_shirt': require('./assets/clothes/tops/lion_dress_shirt_composite.png'),
+  'penguin_red_shirt': require('./assets/clothes/tops/penguin_red_shirt_composite.png'),
+  'penguin_hawaiian_shirt': require('./assets/clothes/tops/penguin_hawaiian_shirt_composite.png'),
+  'penguin_dress_shirt': require('./assets/clothes/tops/penguin_dress_shirt_composite.png'),
 };
 
 export default function App() {
@@ -284,11 +289,7 @@ export default function App() {
       hat: { y: -150, scale: 0.5 },
       glasses: { y: -50, scale: 0.5 },
     },
-    giraffe: {
-      torso: { width: 160, height: 250, y: 150 }, // Tall
-      hat: { y: -220, scale: 0.45 }, // Very high head
-      glasses: { y: -120, scale: 0.45 },
-    },
+
     monkey: {
       torso: { width: 150, height: 180, y: 110 }, // Lanky
       hat: { y: -140, scale: 0.45 },
@@ -298,11 +299,6 @@ export default function App() {
       torso: { width: 220, height: 160, y: 110 }, // Very boxy/wide
       hat: { y: -120, scale: 0.5 },
       glasses: { y: -50, scale: 0.5 },
-    },
-    owl: {
-      torso: { width: 160, height: 160, y: 130 }, // Round
-      hat: { y: -130, scale: 0.4 },
-      glasses: { y: -50, scale: 0.4 },
     },
     penguin: {
       torso: { width: 180, height: 220, y: 120 }, // Tall oval
@@ -730,7 +726,7 @@ export default function App() {
                           // Resize specific animals that are too large in the source asset
                           // Apply resize to composites too if needed, but usually composites are tailored.
                           // Assuming composites are 1:1 with base animals.
-                          ['lion', 'tiger', 'giraffe'].includes(selectedAnimalId) && { width: '65%', height: '55%' }
+                          ['lion', 'tiger'].includes(selectedAnimalId) && { width: '65%', height: '55%' }
                         ]}
                       />
                     );
