@@ -526,8 +526,12 @@ export default function App() {
                 selectedAnimal={selectedAnimal}
                 onSelectAnimal={(animal) => {
                   if (animal.id !== selectedAnimalId) {
-                    // Auto-reset clothes for the new animal
-                    addToHistory({ hat: [], glasses: [], jewelry: [], neckwear: [], top: [], bottoms: [], shoes: [] }, undefined);
+                    // Auto-reset clothes AND background for the new animal
+                    // We directly set history here to wipe undo/redo for a fresh animal start,
+                    // or we can add to history. User said "start empty", implying a fresh state.
+                    // Let's use setHistory to force a hard reset.
+                    setHistory([{ outfit: { hat: [], glasses: [], jewelry: [], neckwear: [], top: [], bottoms: [], shoes: [] }, background: null }]);
+                    setHistoryIndex(0);
                   }
                   setSelectedAnimal(animal.source);
                   setSelectedAnimalId(animal.id);
@@ -674,6 +678,7 @@ export default function App() {
               topOffset={450}
               color="#6A8EAE"
               zIndex={80}
+              allowDrag={true}
             />
 
             {/* DRAWER 7: SHOES (Shifted Up) */}
@@ -781,7 +786,7 @@ export default function App() {
           <View style={styles.modalOverlay}>
             <View style={styles.aboutCard}>
               <Text style={styles.aboutTitle}>Dress It Up! 🐻</Text>
-              <Text style={styles.aboutVersion}>v1.0.0</Text>
+              <Text style={styles.aboutVersion}>v1.1.0</Text>
 
               <Text style={styles.aboutSection}>Created by:</Text>
               <Text style={styles.aboutText}>Uma Wolf</Text>
@@ -796,8 +801,20 @@ export default function App() {
                 <Text style={styles.instructionText}>Pinch to Resize</Text>
               </View>
               <View style={styles.instructionRow}>
+                <Text style={styles.iconText}>👆</Text>
+                <Text style={styles.instructionText}>Drag items from drawers</Text>
+              </View>
+              <View style={styles.instructionRow}>
                 <Text style={styles.iconText}>🗑️</Text>
                 <Text style={styles.instructionText}>Drag to Trash (Top) to Remove</Text>
+              </View>
+              <View style={styles.instructionRow}>
+                <Text style={styles.iconText}>💾</Text>
+                <Text style={styles.instructionText}>Save your Outfit</Text>
+              </View>
+              <View style={styles.instructionRow}>
+                <Text style={styles.iconText}>📷</Text>
+                <Text style={styles.instructionText}>Share / Snapshot</Text>
               </View>
 
               <TouchableOpacity

@@ -1,8 +1,70 @@
 import React, { useState, useRef } from 'react';
 import { View, TouchableOpacity, Image, StyleSheet, Animated, Text, ScrollView, Dimensions } from 'react-native';
+import { GestureDetector, Gesture } from 'react-native-gesture-handler';
+import AnimatedReanimated, { useSharedValue, useAnimatedStyle, withSpring, runOnJS } from 'react-native-reanimated';
 
 const DRAWER_WIDTH = 160;
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+
+function DraggableDrawerItem({ item, active, color, onSelect, allowDrag }) {
+    const translateX = useSharedValue(0);
+    const translateY = useSharedValue(0);
+    const isDragging = useSharedValue(false);
+
+    // Pan Gesture for dragging
+    const panGesture = Gesture.Pan()
+        .enabled(allowDrag)
+        .onStart(() => {
+            isDragging.value = true;
+        })
+        .onUpdate((event) => {
+            translateX.value = event.translationX;
+            translateY.value = event.translationY;
+        })
+        .onEnd(() => {
+            isDragging.value = false;
+            // logic: if dragged far enough left (out of drawer), select it
+            if (translateX.value < -50) {
+                runOnJS(onSelect)(item);
+            }
+            // Bounce back
+            translateX.value = withSpring(0);
+            translateY.value = withSpring(0);
+        });
+
+    const animatedStyle = useAnimatedStyle(() => {
+        return {
+            transform: [
+                { translateX: translateX.value },
+                { translateY: translateY.value },
+                { scale: isDragging.value ? 1.2 : 1 }
+            ],
+            zIndex: isDragging.value ? 9999 : 1, // Attempt to float above
+        };
+    });
+
+    return (
+        <GestureDetector gesture={panGesture}>
+            <AnimatedReanimated.View style={[animatedStyle, { zIndex: 1 }]}>
+                <TouchableOpacity
+                    style={[
+                        styles.thumbnailContainer,
+                        active && { borderColor: color, backgroundColor: 'rgba(255,255,255,0.8)' }
+                    ]}
+                    onPress={() => onSelect(item)}
+                    activeOpacity={0.8}
+                >
+                    {item.source ? (
+                        <Image source={item.source} style={styles.thumbnail} />
+                    ) : (
+                        <View style={[styles.thumbnail, styles.nonePlaceholder]}><Text style={styles.noneText}>🚫</Text></View>
+                    )}
+                    <Text style={styles.label} numberOfLines={1}>{item.name}</Text>
+                </TouchableOpacity>
+            </AnimatedReanimated.View>
+        </GestureDetector>
+    );
+}
 
 export default function SlidingDrawer({
     data,
@@ -14,7 +76,8 @@ export default function SlidingDrawer({
     isMulti = false,
     checkSelected,
     color = '#FF6B6B',
-    zIndex = 100 // Default zIndex
+    zIndex = 100,
+    allowDrag = true // Default true
 }) {
     const [isOpen, setIsOpen] = useState(false);
     const slideAnim = useRef(new Animated.Value(DRAWER_WIDTH)).current;
@@ -48,7 +111,7 @@ export default function SlidingDrawer({
                 {
                     top: topOffset,
                     transform: [{ translateX: slideAnim }],
-                    zIndex: zIndex // Apply zIndex here
+                    zIndex: zIndex
                 }
             ]}
         >
@@ -65,31 +128,21 @@ export default function SlidingDrawer({
             <View style={[styles.drawerContent, { maxHeight: maxContentHeight + 50 }]}>
                 <Text style={[styles.title, { color }]}>{title}</Text>
                 <ScrollView
-                    style={{ maxHeight: maxContentHeight }}
+                    style={{ maxHeight: maxContentHeight, overflow: 'visible' }} // Attempt overlay: visible
                     showsVerticalScrollIndicator={true}
-                    contentContainerStyle={{ paddingBottom: 20 }}
+                    contentContainerStyle={{ paddingBottom: 20, overflow: 'visible' }} // Attempt overflow: visible
                 >
                     <View style={styles.grid}>
-                        {data.map((item) => {
-                            const active = isSelected(item);
-                            return (
-                                <TouchableOpacity
-                                    key={item.id}
-                                    style={[
-                                        styles.thumbnailContainer,
-                                        active && { borderColor: color, backgroundColor: 'rgba(255,255,255,0.8)' }
-                                    ]}
-                                    onPress={() => onSelect(item)}
-                                >
-                                    {item.source ? (
-                                        <Image source={item.source} style={styles.thumbnail} />
-                                    ) : (
-                                        <View style={[styles.thumbnail, styles.nonePlaceholder]}><Text style={styles.noneText}>🚫</Text></View>
-                                    )}
-                                    <Text style={styles.label} numberOfLines={1}>{item.name}</Text>
-                                </TouchableOpacity>
-                            );
-                        })}
+                        {data.map((item) => (
+                            <DraggableDrawerItem
+                                key={item.id}
+                                item={item}
+                                active={isSelected(item)}
+                                color={color}
+                                onSelect={onSelect}
+                                allowDrag={allowDrag}
+                            />
+                        ))}
                     </View>
                 </ScrollView>
             </View>
@@ -104,7 +157,7 @@ const styles = StyleSheet.create({
         width: DRAWER_WIDTH,
         flexDirection: 'row',
         direction: 'ltr', // FORCE LTR for RTL device support
-        // zIndex removed from static style, applied via prop
+        // zIndex applied via prop
         alignItems: 'flex-start',
         height: 'auto', // Allow it to shrink/grow
     },
@@ -161,6 +214,7 @@ const styles = StyleSheet.create({
         flexWrap: 'wrap',
         justifyContent: 'center',
         gap: 10,
+        // React Native gap property support is inconsistent in older versions but fine in recent Expo
     },
     thumbnailContainer: {
         alignItems: 'center',
