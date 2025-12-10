@@ -106,6 +106,12 @@ const COMPOSITES = {
   'mouse_red_shirt': require('./assets/clothes/tops/mouse_red_shirt_composite.png'),
   'mouse_hawaiian_shirt': require('./assets/clothes/tops/mouse_hawaiian_shirt_composite.png'),
   'mouse_dress_shirt': require('./assets/clothes/tops/mouse_dress_shirt_composite.png'),
+  'monkey_red_shirt': require('./assets/clothes/tops/monkey_red_shirt_composite.png'),
+  'monkey_hawaiian_shirt': require('./assets/clothes/tops/monkey_hawaiian_shirt_composite.png'),
+  'monkey_dress_shirt': require('./assets/clothes/tops/monkey_dress_shirt_composite.png'),
+  'tiger_red_shirt': require('./assets/clothes/tops/tiger_red_shirt_composite.png'),
+  'tiger_hawaiian_shirt': require('./assets/clothes/tops/tiger_hawaiian_shirt_composite.png'),
+  'tiger_dress_shirt': require('./assets/clothes/tops/tiger_dress_shirt_composite.png'),
 };
 
 export default function App() {
