@@ -1,7 +1,8 @@
 import React, { useState, useRef } from 'react';
-import { View, TouchableOpacity, Image, StyleSheet, Animated, Text } from 'react-native';
+import { View, TouchableOpacity, Image, StyleSheet, Animated, Text, ScrollView, Dimensions } from 'react-native';
 
 const DRAWER_WIDTH = 160;
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 export default function SlidingDrawer({
     data,
@@ -17,6 +18,10 @@ export default function SlidingDrawer({
 }) {
     const [isOpen, setIsOpen] = useState(false);
     const slideAnim = useRef(new Animated.Value(DRAWER_WIDTH)).current;
+
+    // Calculate Dynamic Height
+    // Reserve space for bottom safe area (approx 40) + Top Offset
+    const maxContentHeight = SCREEN_HEIGHT - topOffset - 60; // 60 for title + padding
 
     const toggleDrawer = () => {
         const toValue = isOpen ? DRAWER_WIDTH : 0;
@@ -57,30 +62,36 @@ export default function SlidingDrawer({
             </TouchableOpacity>
 
             {/* DRAWER CONTENT */}
-            <View style={styles.drawerContent}>
+            <View style={[styles.drawerContent, { maxHeight: maxContentHeight + 50 }]}>
                 <Text style={[styles.title, { color }]}>{title}</Text>
-                <View style={styles.grid}>
-                    {data.map((item) => {
-                        const active = isSelected(item);
-                        return (
-                            <TouchableOpacity
-                                key={item.id}
-                                style={[
-                                    styles.thumbnailContainer,
-                                    active && { borderColor: color, backgroundColor: 'rgba(255,255,255,0.8)' }
-                                ]}
-                                onPress={() => onSelect(item)}
-                            >
-                                {item.source ? (
-                                    <Image source={item.source} style={styles.thumbnail} />
-                                ) : (
-                                    <View style={[styles.thumbnail, styles.nonePlaceholder]}><Text style={styles.noneText}>🚫</Text></View>
-                                )}
-                                <Text style={styles.label} numberOfLines={1}>{item.name}</Text>
-                            </TouchableOpacity>
-                        );
-                    })}
-                </View>
+                <ScrollView
+                    style={{ maxHeight: maxContentHeight }}
+                    showsVerticalScrollIndicator={true}
+                    contentContainerStyle={{ paddingBottom: 20 }}
+                >
+                    <View style={styles.grid}>
+                        {data.map((item) => {
+                            const active = isSelected(item);
+                            return (
+                                <TouchableOpacity
+                                    key={item.id}
+                                    style={[
+                                        styles.thumbnailContainer,
+                                        active && { borderColor: color, backgroundColor: 'rgba(255,255,255,0.8)' }
+                                    ]}
+                                    onPress={() => onSelect(item)}
+                                >
+                                    {item.source ? (
+                                        <Image source={item.source} style={styles.thumbnail} />
+                                    ) : (
+                                        <View style={[styles.thumbnail, styles.nonePlaceholder]}><Text style={styles.noneText}>🚫</Text></View>
+                                    )}
+                                    <Text style={styles.label} numberOfLines={1}>{item.name}</Text>
+                                </TouchableOpacity>
+                            );
+                        })}
+                    </View>
+                </ScrollView>
             </View>
         </Animated.View>
     );

@@ -16,6 +16,7 @@ import SavedOutfitsList from './components/SavedOutfitsList';
 // DATA DEFINITIONS
 const backgrounds = [
   { id: 'park', source: require('./assets/backgrounds/park.png'), name: 'Park' },
+  { id: 'snow', source: require('./assets/backgrounds/snow.png'), name: 'Snow' },
   { id: 'bedroom', source: require('./assets/backgrounds/bedroom.png'), name: 'Bedroom' },
   { id: 'supermarket', source: require('./assets/backgrounds/supermarket.png'), name: 'Supermarket' },
   { id: 'basketball_court', source: require('./assets/backgrounds/basketball_court.png'), name: 'Court' },
@@ -28,6 +29,7 @@ const hats = [
   { id: 'winter_beanie', type: 'hat', source: require('./assets/clothes/hats/winter_beanie.png'), name: 'Beanie' },
   { id: 'cowboy_hat', type: 'hat', source: require('./assets/clothes/hats/cowboy_hat.png'), name: 'Cowboy' },
   { id: 'top_hat', type: 'hat', source: require('./assets/clothes/hats/top_hat.png'), name: 'Top Hat' },
+  { id: 'monopoly_hat', type: 'hat', source: require('./assets/clothes/hats/monopoly_hat.png'), name: 'Monopoly' },
 ];
 
 const glasses = [
@@ -63,6 +65,7 @@ const shoes = [
   { id: 'red_sneaker', type: 'shoes', source: require('./assets/clothes/shoes/red_sneaker.png'), name: 'Red Sneaker' },
   { id: 'flip_flop', type: 'shoes', source: require('./assets/clothes/shoes/flip_flop.png'), name: 'Flip Flop' },
   { id: 'dress_shoe', type: 'shoes', source: require('./assets/clothes/shoes/dress_shoe.png'), name: 'Dress Shoe' },
+  { id: 'boot', type: 'shoes', source: require('./assets/clothes/shoes/boot.png'), name: 'Boot' },
 ];
 
 
@@ -74,10 +77,10 @@ const CENTER_Y = (height * 0.95) / 2 - 75;
 
 // Constants matching the Visual Layout of the Trash Button
 const TRASH_CONFIG = {
-  x: 194,
-  y: 155,
-  radius: 100, // Hit Radius
-  visualRadius: 80 // Feedback Radius
+  x: 231, // Align with 4th button center (Start 20 + 3*62 + 25)
+  y: 75,  // Align with header row (Top 50 + Half Height 25)
+  radius: 40, // Tighter Hit Radius
+  visualRadius: 60 // Feedback Radius
 };
 
 export default function App() {
@@ -344,7 +347,7 @@ export default function App() {
     if (!newOutfit[type]) return;
 
     // TRASH ZONE LOGIC 🗑️
-    // Item Center Calculation (Sticker is 300x300)
+    // Item Center Calculation (Sticker is 300x300 - Centroid is +150)
     const itemCenterX = x + 150;
     const itemCenterY = y + 150;
 
@@ -523,9 +526,7 @@ export default function App() {
           <View style={styles.fullScreenContainer}>
 
             {/* BACKGROUND LAYER */}
-            {currentBackground && (
-              <Image source={currentBackground} style={styles.backgroundImage} />
-            )}
+            {/* BACKGROUND LAYER MOVED INSIDE VIEWSHOT CONTAINER */}
 
             <View style={styles.headerRow}>
               {/* BACK - RED */}
@@ -595,7 +596,7 @@ export default function App() {
               onSelect={(item) => toggleAccessory(item.type, item.source)}
               checkSelected={(item) => isSelected(item.type, item.source)}
               tabIcon="🎩"
-              topOffset={190}
+              topOffset={170}
               color="#4ECDC4"
               zIndex={200}
             />
@@ -607,7 +608,7 @@ export default function App() {
               onSelect={(item) => toggleAccessory(item.type, item.source)}
               checkSelected={(item) => isSelected(item.type, item.source)}
               tabIcon="👓"
-              topOffset={280}
+              topOffset={240}
               color="#FFE66D"
               zIndex={100}
             />
@@ -619,7 +620,7 @@ export default function App() {
               onSelect={(item) => toggleAccessory(item.type, item.source)}
               checkSelected={(item) => isSelected(item.type, item.source)}
               tabIcon="💎"
-              topOffset={370}
+              topOffset={310}
               color="#A0D9B4"
               zIndex={90}
             />
@@ -631,7 +632,7 @@ export default function App() {
               onSelect={(item) => toggleAccessory(item.type, item.source)}
               checkSelected={(item) => isSelected(item.type, item.source)}
               tabIcon="🧣"
-              topOffset={460}
+              topOffset={380}
               color="#FFCCBC"
               zIndex={85}
             />
@@ -643,7 +644,7 @@ export default function App() {
               onSelect={(item) => toggleAccessory(item.type, item.source)}
               checkSelected={(item) => isSelected(item.type, item.source)}
               tabIcon="👕"
-              topOffset={550}
+              topOffset={450}
               color="#6A8EAE"
               zIndex={80}
             />
@@ -655,7 +656,7 @@ export default function App() {
               onSelect={(item) => toggleAccessory(item.type, item.source)}
               checkSelected={(item) => isSelected(item.type, item.source)}
               tabIcon="👖"
-              topOffset={640}
+              topOffset={520}
               color="#E0BBE4"
               zIndex={70}
             />
@@ -667,17 +668,28 @@ export default function App() {
               onSelect={(item) => toggleAccessory(item.type, item.source)}
               checkSelected={(item) => isSelected(item.type, item.source)}
               tabIcon="👟"
-              topOffset={730}
+              topOffset={590}
               color="#957DAD"
               zIndex={60}
             />
 
             {/* Main Display Area - MAXIMIZED & DRAGGABLE */}
             <View style={styles.maximizedDisplayArea} ref={viewShotRef} collapsable={false}>
+              {/* BACKGROUND LAYER (Included in Snapshot) */}
+              {currentBackground && (
+                <Image source={currentBackground} style={styles.backgroundImage} />
+              )}
               <GestureDetector gesture={animalDragGesture}>
                 <Animated.View style={[styles.layerContainer, layerContainerStyle]}>
                   {/* Base Animal - Still static center */}
-                  <Image source={selectedAnimal} style={styles.maximizedImage} />
+                  <Image
+                    source={selectedAnimal}
+                    style={[
+                      styles.maximizedImage,
+                      // Resize specific animals that are too large in the source asset
+                      ['lion', 'tiger', 'giraffe'].includes(selectedAnimalId) && { width: '65%', height: '55%' }
+                    ]}
+                  />
 
                   {/* Draggable Layers (Render order matters for z-index) */}
                   {/* Order: Shoes -> Bottoms -> Top -> Neckwear -> Jewelry -> Glasses -> Hat */}
