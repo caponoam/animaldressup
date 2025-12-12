@@ -1,0 +1,11 @@
+Dress It Up! v1.2.0 Release Notes
+
+We've polished up the wardrobe! 🐻✨
+
+What's New:
+- 🌍 Better RTL Support: We've fixed layout issues for Right-to-Left languages. Menus and buttons now appear exactly where they should!
+- ⚡ Faster Loading: The animal picker is now optimized for speed, masking scrolling smoother on all devices.
+- 📱 Tablet Ready: Validated and optimized for tablet screens.
+- 🐛 Bug Squashing: Fixed minor visual glitches.
+
+Enjoying the update? Rate us!
