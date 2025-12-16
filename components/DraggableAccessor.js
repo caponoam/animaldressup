@@ -3,7 +3,7 @@ import { StyleSheet, Image } from 'react-native';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import Animated, { useSharedValue, useAnimatedStyle, runOnJS, withSpring, withTiming } from 'react-native-reanimated';
 
-const STICKER_SIZE = 300;
+const STICKER_SIZE = 600;
 
 export default function DraggableAccessor({ source, initialX, initialY, initialScaleX = 1, initialScaleY = 1, initialRotation = 0, onDragEnd, garbageConfig }) {
     // Shared values for smooth UI thread animations
@@ -45,8 +45,8 @@ export default function DraggableAccessor({ source, initialX, initialY, initialS
 
             // Check Garbage Proximity if config exists
             if (garbageConfig) {
-                const itemCenterX = nextX + 150; // Sticker is 300x300
-                const itemCenterY = nextY + 150;
+                const itemCenterX = nextX + 300;
+                const itemCenterY = nextY + 300;
                 const dist = Math.sqrt(Math.pow(itemCenterX - garbageConfig.x, 2) + Math.pow(itemCenterY - garbageConfig.y, 2));
 
                 if (dist < garbageConfig.radius) {

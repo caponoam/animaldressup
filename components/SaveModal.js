@@ -1,8 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal, View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
 
-export default function SaveModal({ visible, onClose, onSave }) {
-    const [name, setName] = useState('');
+export default function SaveModal({ visible, onClose, onSave, initialName = '', isUpdate = false }) {
+    const [name, setName] = useState(initialName);
+
+    useEffect(() => {
+        if (visible) {
+            setName(initialName);
+        }
+    }, [visible, initialName]);
 
     const handleSave = () => {
         if (name.trim()) {
@@ -29,7 +35,7 @@ export default function SaveModal({ visible, onClose, onSave }) {
                 style={styles.centeredView}
             >
                 <View style={styles.modalView}>
-                    <Text style={styles.modalTitle}>Save Outfit</Text>
+                    <Text style={styles.modalTitle}>{isUpdate ? "Update Outfit" : "Save Outfit"}</Text>
                     <Text style={styles.modalSubtitle}>Give your masterpiece a name!</Text>
 
                     <TextInput
@@ -53,7 +59,7 @@ export default function SaveModal({ visible, onClose, onSave }) {
                             onPress={handleSave}
                             disabled={!name.trim()}
                         >
-                            <Text style={styles.textStyle}>Save</Text>
+                            <Text style={styles.textStyle}>{isUpdate ? "Update" : "Save"}</Text>
                         </TouchableOpacity>
                     </View>
                 </View>

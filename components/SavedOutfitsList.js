@@ -4,21 +4,15 @@ import { View, Text, ScrollView, TouchableOpacity, Image, StyleSheet, Dimensions
 const { width, height } = Dimensions.get('window');
 // Replicate App.js centering logic to normalize coordinates
 // Scale is relative to the "sticker size" of 300px
-const STICKER_SIZE = 300;
-const APP_CENTER_X = (width * 0.95) / 2 - 75; // 75 is half of the *original* 150 size? 
-// Wait, DraggableAccessor says STICKER_SIZE = 300. 
-// App.js says: const CENTER_X = (width * 0.95) / 2 - 75;
-// IF App.js is using 75, that implies it's centering a 150px object.
-// BUT we changed Sticker Size to 300. 
-// Note: App.js logic might strictly center the *top left* of a 150px box?
-// Let's trust the logic works in App.js and just replicate the variable value.
-const APP_CENTER_Y = (height * 0.95) / 2 - 75;
+const STICKER_SIZE = 600;
+const APP_CENTER_X = (width * 0.95) / 2 - 300; // Half of 600
+const APP_CENTER_Y = (height * 0.95) / 2 - 300;
 
 // Thumbnail Configuration
 const THUMB_SIZE = 100;
-const THUMB_SCALE = THUMB_SIZE / 350; // Shrink ~300px+ content to ~100px box
+const THUMB_SCALE = THUMB_SIZE / 600; // Shrink 600px content to 100px box
 
-export default function SavedOutfitsList({ savedOutfits, onLoad }) {
+export default function SavedOutfitsList({ savedOutfits, onLoad, onDelete }) {
     if (!savedOutfits || savedOutfits.length === 0) {
         return null;
     }
@@ -32,8 +26,12 @@ export default function SavedOutfitsList({ savedOutfits, onLoad }) {
         return items.map((item, index) => {
             // Calculate relative offset from the "Center"
             // In App, animal is at APP_CENTER_X/Y. Layer is at item.x / item.y.
-            const offsetX = (item.x - APP_CENTER_X) * THUMB_SCALE;
-            const offsetY = (item.y - APP_CENTER_Y) * THUMB_SCALE;
+            // Safe access to properties with fallbacks
+            const itemX = typeof item.x === 'number' ? item.x : APP_CENTER_X; // Fallback to center
+            const itemY = typeof item.y === 'number' ? item.y : APP_CENTER_Y;
+
+            const offsetX = (itemX - APP_CENTER_X) * THUMB_SCALE;
+            const offsetY = (itemY - APP_CENTER_Y) * THUMB_SCALE;
 
             const itemScaleX = (item.scaleX || item.scale || 1) * THUMB_SCALE;
             const itemScaleY = (item.scaleY || item.scale || 1) * THUMB_SCALE;
@@ -80,13 +78,21 @@ export default function SavedOutfitsList({ savedOutfits, onLoad }) {
                             />
 
                             {/* 2. Accessories (Order: Shoes -> Bottoms -> Tops -> Jewelry -> Glasses -> Hats) */}
-                            {renderLayer(outfit.outfit.shoes, 'shoes')}
-                            {renderLayer(outfit.outfit.bottoms, 'bottoms')}
-                            {renderLayer(outfit.outfit.top, 'top')}
-                            {renderLayer(outfit.outfit.jewelry, 'jewelry')}
+                            {renderLayer(outfit.outfit?.shoes, 'shoes')}
+                            {renderLayer(outfit.outfit?.bottoms, 'bottoms')}
+                            {renderLayer(outfit.outfit?.top, 'top')}
+                            {renderLayer(outfit.outfit?.neckwear, 'neckwear')}
+                            {renderLayer(outfit.outfit?.jewelry, 'jewelry')}
                             {renderLayer(outfit.outfit.glasses, 'glasses')}
-                            {renderLayer(outfit.outfit.hat, 'hat')}
+                            {renderLayer(outfit.outfit?.hat, 'hat')}
                         </View>
+                        <TouchableOpacity
+                            style={styles.deleteButton}
+                            onPress={() => onDelete(outfit.id)}
+                            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                        >
+                            <Text style={styles.deleteText}>❌</Text>
+                        </TouchableOpacity>
                         <View style={styles.labelContainer}>
                             <Text style={styles.nameLabel} numberOfLines={1}>{outfit.name}</Text>
                             <Text style={styles.dateLabel}>{new Date(outfit.date).toLocaleDateString()}</Text>
@@ -169,5 +175,20 @@ const styles = StyleSheet.create({
         fontSize: 10,
         color: '#888',
         marginTop: 2,
+    },
+    deleteButton: {
+        position: 'absolute',
+        top: 5,
+        right: 5,
+        backgroundColor: 'rgba(255,255,255,0.8)',
+        borderRadius: 12,
+        width: 24,
+        height: 24,
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 10,
+    },
+    deleteText: {
+        fontSize: 12,
     },
 });

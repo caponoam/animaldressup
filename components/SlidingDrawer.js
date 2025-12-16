@@ -21,11 +21,11 @@ function DraggableDrawerItem({ item, active, color, onSelect, allowDrag }) {
             translateX.value = event.translationX;
             translateY.value = event.translationY;
         })
-        .onEnd(() => {
+        .onEnd((event) => {
             isDragging.value = false;
             // logic: if dragged far enough left (out of drawer), select it
             if (translateX.value < -50) {
-                runOnJS(onSelect)(item);
+                runOnJS(onSelect)(item, { x: event.absoluteX, y: event.absoluteY });
             }
             // Bounce back
             translateX.value = withSpring(0);

@@ -6,7 +6,9 @@ import Animated, { useSharedValue, useAnimatedStyle, withSpring, withTiming, wit
 import { LinearGradient } from 'expo-linear-gradient';
 import { shareAsync } from 'expo-sharing';
 import { captureRef } from 'react-native-view-shot';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as FileSystem from 'expo-file-system/legacy';
+
 import AnimalPicker from './components/AnimalPicker';
 import SlidingDrawer from './components/SlidingDrawer';
 import DraggableAccessor from './components/DraggableAccessor';
@@ -14,6 +16,19 @@ import SaveModal from './components/SaveModal';
 import SavedOutfitsList from './components/SavedOutfitsList';
 
 // DATA DEFINITIONS
+const BASE_ANIMALS = [
+  { id: 'bear', source: require('./assets/animals/bear.png') },
+  { id: 'bunny', source: require('./assets/animals/bunny.png') },
+  { id: 'cat', source: require('./assets/animals/cat.png') },
+  { id: 'dog', source: require('./assets/animals/dog.png') },
+  { id: 'mouse', source: require('./assets/animals/mouse.png') },
+  { id: 'monkey', source: require('./assets/animals/monkey.png') },
+  { id: 'capybara', source: require('./assets/animals/capybara.png') },
+  { id: 'penguin', source: require('./assets/animals/penguin.png') },
+  { id: 'lion', source: require('./assets/animals/lion.png') },
+  { id: 'tiger', source: require('./assets/animals/tiger.png') },
+];
+
 const backgrounds = [
   { id: 'park', source: require('./assets/backgrounds/park.png'), name: 'Park' },
   { id: 'snow', source: require('./assets/backgrounds/snow.png'), name: 'Snow' },
@@ -69,12 +84,11 @@ const shoes = [
   { id: 'boot', type: 'shoes', source: require('./assets/clothes/shoes/boot.png'), name: 'Boot' },
 ];
 
-
 // Screen Center Helpers
 const { width, height } = Dimensions.get('window');
-const STICKER_SIZE = 300;
-const CENTER_X = (width * 0.95) / 2 - 75; // 95% width container / 2 - half sticker size
-const CENTER_Y = (height * 0.95) / 2 - 75;
+const STICKER_SIZE = 600;
+const CENTER_X = (width * 0.95) / 2 - 300;
+const CENTER_Y = (height * 0.95) / 2 - 300;
 
 // Constants matching the Visual Layout of the Trash Button
 const TRASH_CONFIG = {
@@ -122,13 +136,17 @@ const COMPOSITES = {
 export default function App() {
   const viewShotRef = useRef();
   const [selectedAnimal, setSelectedAnimal] = useState(null);
-  const [selectedAnimalId, setSelectedAnimalId] = useState(null); // Track ID for heuristics
+  const [selectedAnimalId, setSelectedAnimalId] = useState(null); // Track ID
+  const [currentOutfitId, setCurrentOutfitId] = useState(null); // Track loaded/saved outfit ID for overwriting
   const [currentScreen, setCurrentScreen] = useState('selection'); // 'selection' | 'dressup'
 
   // EASTER EGG STATE 🥚
   const [eggCount, setEggCount] = useState(0);
   const [isAntiGravity, setIsAntiGravity] = useState(false); // ANIMATION SHARED VALUES
   const gravityOffset = useSharedValue(0);
+
+  // STORAGE KEY
+  const STORAGE_KEY = '@dress_it_up_outfits_v1';
 
   // HARDWARE BACK BUTTON HANDLER
   useEffect(() => {
@@ -144,19 +162,77 @@ export default function App() {
       if (currentScreen === 'dressup') {
         setCurrentScreen('selection');
         return true;
-        // NOTE: We do NOT clear history/outfit here to allow user to return
       }
-      // Default: Exit App
       return false;
     };
-
-    const backHandler = BackHandler.addEventListener(
-      'hardwareBackPress',
-      backAction
-    );
-
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
     return () => backHandler.remove();
-  }, [currentScreen, isAboutVisible, isSaveModalVisible]); // Re-bind when state changes
+  }, [currentScreen, isAboutVisible, isSaveModalVisible]);
+
+  // LOAD OUTFITS ON MOUNT
+  useEffect(() => {
+    const loadOutfits = async () => {
+      try {
+        const jsonValue = await AsyncStorage.getItem(STORAGE_KEY);
+        if (jsonValue != null) {
+          const rawOutfits = JSON.parse(jsonValue);
+
+          // HYDRATE OUTFITS (Restore 'source' from IDs)
+          const hydratedOutfits = rawOutfits.map(outfit => {
+            const animalObj = BASE_ANIMALS.find(a => a.id === outfit.animalId);
+            const animalSource = animalObj ? animalObj.source : null;
+
+            const bgObj = backgrounds.find(b => b.id === outfit.backgroundId);
+            const bgSource = bgObj ? bgObj.source : (outfit.background ? outfit.background : null);
+
+            const hydratedOutfit = {};
+            Object.keys(outfit.outfit).forEach(type => {
+              const items = outfit.outfit[type] || [];
+              hydratedOutfit[type] = items.map(item => {
+                let source = item.source; // Default to saved (if number works) or null
+                let foundItem = null;
+
+                if (type === 'top') foundItem = tops.find(t => t.id === item.itemId);
+                else if (type === 'hat') foundItem = hats.find(h => h.id === item.itemId);
+                else if (type === 'glasses') foundItem = glasses.find(g => g.id === item.itemId);
+                else if (type === 'jewelry') foundItem = jewelry.find(j => j.id === item.itemId);
+                else if (type === 'neckwear') foundItem = neckwear.find(n => n.id === item.itemId);
+                else if (type === 'bottoms') foundItem = bottoms.find(b => b.id === item.itemId);
+                else if (type === 'shoes') foundItem = shoes.find(s => s.id === item.itemId);
+
+                if (foundItem) {
+                  source = foundItem.source;
+                }
+
+                return { ...item, source };
+              }).filter(i => i.source);
+            });
+
+            return {
+              ...outfit,
+              animal: animalSource,
+              background: bgSource,
+              outfit: hydratedOutfit
+            };
+          }).filter(o => o.animal);
+
+          setSavedOutfits(hydratedOutfits);
+        }
+      } catch (e) {
+        console.error("Failed to load outfits", e);
+      }
+    };
+    loadOutfits();
+  }, []);
+
+  const saveOutfitsToStorage = async (newOutfits) => {
+    try {
+      const jsonValue = JSON.stringify(newOutfits);
+      await AsyncStorage.setItem(STORAGE_KEY, jsonValue);
+    } catch (e) {
+      console.error("Failed to save outfits", e);
+    }
+  };
 
   const handleTitleTap = () => {
     const newCount = eggCount + 1;
@@ -183,7 +259,6 @@ export default function App() {
   });
 
   // HISTORY STATE
-  // Each history item: { outfit: { hat: { source, x, y, scale }, ... }, background: ... }
   const [history, setHistory] = useState([
     { outfit: { hat: [], glasses: [], jewelry: [], neckwear: [], top: [], bottoms: [], shoes: [] }, background: null }
   ]);
@@ -203,8 +278,6 @@ export default function App() {
       outfit: newOutfit !== undefined ? newOutfit : currentOutfit,
       background: newBackground !== undefined ? newBackground : currentBackground
     };
-
-    // NOTE: In a real app we might debounce drag updates, but for now we save on release
     const nextHistory = history.slice(0, historyIndex + 1);
     nextHistory.push(newSnapshot);
     setHistory(nextHistory);
@@ -234,7 +307,6 @@ export default function App() {
         result: 'tmpfile',
       });
 
-      // Explicitly check file
       const fileInfo = await FileSystem.getInfoAsync(uri);
       if (!fileInfo.exists) {
         throw new Error("Snapshot file was not created");
@@ -248,24 +320,23 @@ export default function App() {
   };
 
   // CONSTANTS
-  const SHIRT_BASE_WIDTH = 240; // The pixel width of the shirt asset at 1.0 scale
-  const SHIRT_BASE_HEIGHT = 200; // The pixel height of the shirt asset at 1.0 scale
+  const SHIRT_BASE_WIDTH = 240;
+  const SHIRT_BASE_HEIGHT = 200;
 
-  // HEURISTIC FITS (Base size: 300px)
-  // torso: { width: target width px, height: target height px, y: center y offset }
+  // HEURISTIC FITS
   const ANIMAL_FITS = {
     bear: {
-      torso: { width: 260, height: 200, y: 110 }, // Wide and short
+      torso: { width: 260, height: 200, y: 110 },
       hat: { y: -150, scale: 0.5 },
       glasses: { y: -50, scale: 0.5 },
     },
     bunny: {
-      torso: { width: 140, height: 180, y: 120 }, // Thin and tall
+      torso: { width: 140, height: 180, y: 120 },
       hat: { y: -180, scale: 0.4 },
       glasses: { y: -40, scale: 0.4 },
     },
     cat: {
-      torso: { width: 160, height: 160, y: 110 }, // Boxier
+      torso: { width: 160, height: 160, y: 110 },
       hat: { y: -140, scale: 0.45 },
       glasses: { y: -50, scale: 0.45 },
     },
@@ -275,33 +346,32 @@ export default function App() {
       glasses: { y: -55, scale: 0.42 },
     },
     mouse: {
-      torso: { width: 120, height: 120, y: 100 }, // Small square
+      torso: { width: 120, height: 120, y: 100 },
       hat: { y: -140, scale: 0.35 },
       glasses: { y: -40, scale: 0.35 },
     },
     lion: {
-      torso: { width: 250, height: 200, y: 110 }, // Big/Wide like bear
+      torso: { width: 250, height: 200, y: 110 },
       hat: { y: -150, scale: 0.5 },
       glasses: { y: -50, scale: 0.5 },
     },
     tiger: {
-      torso: { width: 250, height: 200, y: 110 }, // Big/Wide like bear
+      torso: { width: 250, height: 200, y: 110 },
       hat: { y: -150, scale: 0.5 },
       glasses: { y: -50, scale: 0.5 },
     },
-
     monkey: {
-      torso: { width: 150, height: 180, y: 110 }, // Lanky
+      torso: { width: 150, height: 180, y: 110 },
       hat: { y: -140, scale: 0.45 },
       glasses: { y: -55, scale: 0.4 },
     },
     capybara: {
-      torso: { width: 220, height: 160, y: 110 }, // Very boxy/wide
+      torso: { width: 220, height: 160, y: 110 },
       hat: { y: -120, scale: 0.5 },
       glasses: { y: -50, scale: 0.5 },
     },
     penguin: {
-      torso: { width: 180, height: 220, y: 120 }, // Tall oval
+      torso: { width: 180, height: 220, y: 120 },
       hat: { y: -140, scale: 0.42 },
       glasses: { y: -60, scale: 0.4 },
     },
@@ -310,30 +380,28 @@ export default function App() {
   const getInitialTransform = (type) => {
     const animalFit = ANIMAL_FITS[selectedAnimalId] || { y: 0, hat: { y: -100, scale: 0.5 }, glasses: { y: -30, scale: 0.5 }, torso: { width: 240, height: 200, y: 50 } };
 
-    // Initial Scale & Position based on type
-    let scaleX = animalFit[type]?.scale || 0.5; // Default scale
-    let scaleY = animalFit[type]?.scale || 0.5; // Default scale
+    let scaleX = animalFit[type]?.scale || 0.5;
+    let scaleY = animalFit[type]?.scale || 0.5;
     let yOffset = animalFit[type]?.y || 0;
 
     if (type === 'top') {
-      // Pixel Perfect Stretch
       scaleX = animalFit.torso.width / SHIRT_BASE_WIDTH;
       scaleY = animalFit.torso.height / SHIRT_BASE_HEIGHT;
       yOffset = animalFit.torso.y;
     } else if (type === 'jewelry') {
-      yOffset = animalFit.torso.y - 30; // Neck area
+      yOffset = animalFit.torso.y - 30;
       scaleX = 0.4;
       scaleY = 0.4;
     } else if (type === 'neckwear') {
-      yOffset = animalFit.torso.y - 20; // Slightly lower on neck
+      yOffset = animalFit.torso.y - 20;
       scaleX = 0.4;
       scaleY = 0.4;
     } else if (type === 'bottoms') {
-      yOffset = animalFit.torso.y + 100; // Lower body
+      yOffset = animalFit.torso.y + 100;
       scaleX = 0.5;
       scaleY = 0.5;
     } else if (type === 'shoes') {
-      yOffset = animalFit.torso.y + 180; // Feet area
+      yOffset = animalFit.torso.y + 180;
       scaleX = 0.4;
       scaleY = 0.4;
     }
@@ -347,20 +415,27 @@ export default function App() {
     };
   };
 
-  const toggleAccessory = (type, source) => {
+  const toggleAccessory = (type, source, itemId, dropCoords) => {
     const newOutfit = { ...currentOutfit };
     const items = newOutfit[type] || [];
 
-    // ALWAYS ADD: Append new item with unique instanceId
-    // We removed the removal logic here to support multiple of the same item.
-    // Removal is now done via Drag-to-Trash.
     const transform = getInitialTransform(type);
+
+    let initialX = transform.x;
+    let initialY = transform.y;
+
+    if (dropCoords && typeof dropCoords.x === 'number' && typeof dropCoords.y === 'number') {
+      initialX = dropCoords.x - 300;
+      initialY = dropCoords.y - 300;
+    }
+
     const newItem = {
-      instanceId: Date.now() + Math.random(), // Simple unique ID
+      instanceId: Date.now() + Math.random(),
+      itemId,
       source,
-      x: transform.x,
-      y: transform.y,
-      scaleX: transform.scaleX,
+      x: initialX,
+      y: initialY,
+      scaleX: transform.scaleX, // Keep heuristic scale
       scaleY: transform.scaleY,
       rotation: transform.rotation
     };
@@ -373,33 +448,23 @@ export default function App() {
     const newOutfit = { ...currentOutfit };
     if (!newOutfit[type]) return;
 
-    // TRASH ZONE LOGIC 🗑️
-    // Item Center Calculation (Sticker is 300x300 - Centroid is +150)
-    const itemCenterX = x + 150;
-    const itemCenterY = y + 150;
+    const itemCenterX = x + 300;
+    const itemCenterY = y + 300;
 
     const distToTrash = Math.sqrt(Math.pow(itemCenterX - TRASH_CONFIG.x, 2) + Math.pow(itemCenterY - TRASH_CONFIG.y, 2));
 
     if (distToTrash < TRASH_CONFIG.radius) {
-      // DELETE ITEM
       newOutfit[type] = newOutfit[type].filter(item => item.instanceId !== instanceId);
       addToHistory(newOutfit, undefined);
-      return; // Stop update
+      return;
     }
 
-    // Find item to update
     const itemIndex = newOutfit[type].findIndex(item => item.instanceId === instanceId);
     if (itemIndex === -1) return;
 
     const item = newOutfit[type][itemIndex];
 
-    // MAGNETIC SNAP LOGIC REMOVED 🧲🚫
-    // User dictates exact position.
-    let finalX = x;
-    let finalY = y;
-
-    // Update specific item in array
-    const updatedItem = { ...item, x: finalX, y: finalY, scaleX, scaleY, rotation };
+    const updatedItem = { ...item, x: x, y: y, scaleX, scaleY, rotation };
     newOutfit[type] = [
       ...newOutfit[type].slice(0, itemIndex),
       updatedItem,
@@ -409,7 +474,6 @@ export default function App() {
     addToHistory(newOutfit, undefined);
   };
 
-  // ANIMAL POSITION & DRAG STATE
   const animalX = useSharedValue(0);
   const animalY = useSharedValue(0);
   const animalStartContext = useSharedValue({ x: 0, y: 0 });
@@ -423,17 +487,16 @@ export default function App() {
       animalY.value = animalStartContext.value.y + e.translationY;
     });
 
-  // Combined Style: Drag Position + Gravity Float
   const layerContainerStyle = useAnimatedStyle(() => {
     return {
       transform: [
         { translateX: animalX.value },
-        { translateY: animalY.value + gravityOffset.value } // Combine y-drag and gravity float
+        { translateY: animalY.value + gravityOffset.value }
       ]
     };
   });
 
-  const setBackground = (source) => {
+  const setBackground = (source, id) => {
     addToHistory(undefined, source);
   };
 
@@ -452,24 +515,67 @@ export default function App() {
     );
   };
 
+  const handleDeleteOutfit = (outfitId) => {
+    Alert.alert(
+      "Delete Outfit?",
+      "are you sure you want to delete this outfit? this cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: () => {
+            const updatedList = savedOutfits.filter(o => o.id !== outfitId);
+            setSavedOutfits(updatedList);
+            saveOutfitsToStorage(updatedList);
+
+            // If we deleted the currently active outfit, reset tracking
+            if (currentOutfitId === outfitId) {
+              setCurrentOutfitId(null);
+            }
+          }
+        }
+      ]
+    );
+  };
+
   const handleSaveOutfit = (name) => {
+    const bgObj = backgrounds.find(b => b.source === currentBackground);
+    const backgroundId = bgObj ? bgObj.id : null;
+
+    // Use current ID if overwriting, else generate new one
+    const idToUse = currentOutfitId || Date.now().toString();
+
     const newSavedOutfit = {
-      id: Date.now().toString(),
+      id: idToUse,
       name,
       animal: selectedAnimal,
       animalId: selectedAnimalId,
-      outfit: currentOutfit,
       background: currentBackground,
+      backgroundId: backgroundId,
+      outfit: currentOutfit,
       date: new Date().toISOString(),
     };
-    setSavedOutfits([newSavedOutfit, ...savedOutfits]);
+
+    let updatedList;
+    if (currentOutfitId) {
+      // OVERWRITE EXISTING
+      updatedList = savedOutfits.map(o => o.id === currentOutfitId ? newSavedOutfit : o);
+    } else {
+      // CREATE NEW
+      updatedList = [newSavedOutfit, ...savedOutfits];
+      setCurrentOutfitId(idToUse); // Track this new outfit so subsequent saves overwrite it
+    }
+
+    setSavedOutfits(updatedList);
+    saveOutfitsToStorage(updatedList);
   };
 
   const handleLoadOutfit = (savedOutfit) => {
     setSelectedAnimal(savedOutfit.animal);
     setSelectedAnimalId(savedOutfit.animalId);
+    setCurrentOutfitId(savedOutfit.id); // Track loaded ID
 
-    // Reset history to this point
     setHistory([{ outfit: savedOutfit.outfit, background: savedOutfit.background }]);
     setHistoryIndex(0);
 
@@ -486,7 +592,6 @@ export default function App() {
     setCurrentScreen('selection');
   };
 
-  // Helper for checking selection in drawer
   const isSelected = (type, source) => {
     return currentOutfit[type]?.some(item => item.source === source);
   }
@@ -509,6 +614,13 @@ export default function App() {
               <Animated.Text style={[styles.title, floatStyle]}>Pick Your Pal!</Animated.Text>
             </TouchableOpacity>
 
+            <TouchableOpacity
+              style={styles.aboutButton}
+              onPress={() => setIsAboutVisible(true)}
+            >
+              <Text style={styles.aboutButtonText}>?</Text>
+            </TouchableOpacity>
+
             <View style={styles.previewContainer}>
               {selectedAnimal ? (
                 <Animated.View style={[styles.cardGlow, floatStyle]}>
@@ -526,12 +638,9 @@ export default function App() {
                 selectedAnimal={selectedAnimal}
                 onSelectAnimal={(animal) => {
                   if (animal.id !== selectedAnimalId) {
-                    // Auto-reset clothes AND background for the new animal
-                    // We directly set history here to wipe undo/redo for a fresh animal start,
-                    // or we can add to history. User said "start empty", implying a fresh state.
-                    // Let's use setHistory to force a hard reset.
                     setHistory([{ outfit: { hat: [], glasses: [], jewelry: [], neckwear: [], top: [], bottoms: [], shoes: [] }, background: null }]);
                     setHistoryIndex(0);
+                    setCurrentOutfitId(null); // Reset when changing animal (treat as new creation)
                   }
                   setSelectedAnimal(animal.source);
                   setSelectedAnimalId(animal.id);
@@ -548,16 +657,17 @@ export default function App() {
               <Text style={styles.buttonText}>Dress 'Em Up!</Text>
             </TouchableOpacity>
 
-            <SavedOutfitsList savedOutfits={savedOutfits} onLoad={handleLoadOutfit} />
+            <SavedOutfitsList
+              savedOutfits={savedOutfits}
+              onLoad={handleLoadOutfit}
+              onDelete={handleDeleteOutfit}
+            />
           </ScrollView>
         )}
 
         {/* SCREEN 2: DRESS UP (FULL SCREEN MODE) */}
         {currentScreen === 'dressup' && (
           <View style={styles.fullScreenContainer}>
-
-            {/* BACKGROUND LAYER */}
-            {/* BACKGROUND LAYER MOVED INSIDE VIEWSHOT CONTAINER */}
 
             <View style={styles.headerRow}>
               {/* BACK - RED */}
@@ -612,7 +722,7 @@ export default function App() {
             <SlidingDrawer
               title="Sights"
               data={backgrounds}
-              onSelect={(item) => setBackground(item.source)}
+              onSelect={(item) => setBackground(item.source, item.id)}
               selectedItem={currentBackground}
               tabIcon="🎨"
               topOffset={100}
@@ -624,7 +734,7 @@ export default function App() {
             <SlidingDrawer
               title="Hats"
               data={hats}
-              onSelect={(item) => toggleAccessory(item.type, item.source)}
+              onSelect={(item) => toggleAccessory(item.type, item.source, item.id)}
               checkSelected={(item) => isSelected(item.type, item.source)}
               tabIcon="🎩"
               topOffset={170}
@@ -636,7 +746,7 @@ export default function App() {
             <SlidingDrawer
               title="Glasses"
               data={glasses}
-              onSelect={(item) => toggleAccessory(item.type, item.source)}
+              onSelect={(item, dropCoords) => toggleAccessory(item.type, item.source, item.id, dropCoords)}
               checkSelected={(item) => isSelected(item.type, item.source)}
               tabIcon="👓"
               topOffset={240}
@@ -648,7 +758,7 @@ export default function App() {
             <SlidingDrawer
               title="Jewelry"
               data={jewelry}
-              onSelect={(item) => toggleAccessory(item.type, item.source)}
+              onSelect={(item, dropCoords) => toggleAccessory(item.type, item.source, item.id, dropCoords)}
               checkSelected={(item) => isSelected(item.type, item.source)}
               tabIcon="💎"
               topOffset={310}
@@ -660,7 +770,7 @@ export default function App() {
             <SlidingDrawer
               title="Neckwear"
               data={neckwear}
-              onSelect={(item) => toggleAccessory(item.type, item.source)}
+              onSelect={(item, dropCoords) => toggleAccessory(item.type, item.source, item.id, dropCoords)}
               checkSelected={(item) => isSelected(item.type, item.source)}
               tabIcon="🧣"
               topOffset={380}
@@ -672,7 +782,7 @@ export default function App() {
             <SlidingDrawer
               title="Tops"
               data={tops}
-              onSelect={(item) => toggleAccessory(item.type, item.source)}
+              onSelect={(item, dropCoords) => toggleAccessory(item.type, item.source, item.id, dropCoords)}
               checkSelected={(item) => isSelected(item.type, item.source)}
               tabIcon="👕"
               topOffset={450}
@@ -685,26 +795,13 @@ export default function App() {
             <SlidingDrawer
               title="Shoes"
               data={shoes}
-              onSelect={(item) => toggleAccessory(item.type, item.source)}
+              onSelect={(item, dropCoords) => toggleAccessory(item.type, item.source, item.id, dropCoords)}
               checkSelected={(item) => isSelected(item.type, item.source)}
               tabIcon="👟"
               topOffset={520}
               color="#957DAD"
               zIndex={70}
             />
-
-            {/* DRAWER 8: BOTTOMS (Shifted Down) - HIDDEN FOR NOW
-            <SlidingDrawer
-              title="Bottoms"
-              data={bottoms}
-              onSelect={(item) => toggleAccessory(item.type, item.source)}
-              checkSelected={(item) => isSelected(item.type, item.source)}
-              tabIcon="👖"
-              topOffset={590}
-              color="#E0BBE4"
-              zIndex={60}
-            />
-            */}
 
             {/* Main Display Area - MAXIMIZED & DRAGGABLE */}
             <View style={styles.maximizedDisplayArea} ref={viewShotRef} collapsable={false}>
@@ -729,9 +826,8 @@ export default function App() {
                         style={[
                           styles.maximizedImage,
                           // Resize specific animals that are too large in the source asset
-                          // Apply resize to composites too if needed, but usually composites are tailored.
-                          // Assuming composites are 1:1 with base animals.
-                          ['lion', 'tiger'].includes(selectedAnimalId) && { width: '65%', height: '55%' }
+                          // Removed override to allow full size as requested
+                          // ['lion', 'tiger'].includes(selectedAnimalId) && { width: '65%', height: '55%' }
                         ]}
                       />
                     );
@@ -770,10 +866,13 @@ export default function App() {
 
         <StatusBar style="light" />
 
+        {/* SAVE MODAL */}
         <SaveModal
           visible={isSaveModalVisible}
           onClose={() => setIsSaveModalVisible(false)}
           onSave={handleSaveOutfit}
+          initialName={currentOutfitId ? savedOutfits.find(o => o.id === currentOutfitId)?.name : ''}
+          isUpdate={!!currentOutfitId}
         />
 
         {/* ABOUT MODAL */}
@@ -798,44 +897,27 @@ export default function App() {
               </View>
               <View style={styles.instructionRow}>
                 <Text style={styles.iconText}>🤏</Text>
-                <Text style={styles.instructionText}>Pinch to Resize</Text>
-              </View>
-              <View style={styles.instructionRow}>
-                <Text style={styles.iconText}>👆</Text>
-                <Text style={styles.instructionText}>Drag items from drawers</Text>
+                <Text style={styles.instructionText}>Pinch to Resize & Rotate</Text>
               </View>
               <View style={styles.instructionRow}>
                 <Text style={styles.iconText}>🗑️</Text>
-                <Text style={styles.instructionText}>Drag to Trash (Top) to Remove</Text>
+                <Text style={styles.instructionText}>Drag items to Trash (Top Center)</Text>
               </View>
               <View style={styles.instructionRow}>
-                <Text style={styles.iconText}>💾</Text>
-                <Text style={styles.instructionText}>Save your Outfit</Text>
-              </View>
-              <View style={styles.instructionRow}>
-                <Text style={styles.iconText}>📷</Text>
-                <Text style={styles.instructionText}>Share / Snapshot</Text>
+                <Text style={styles.iconText}>📸</Text>
+                <Text style={styles.instructionText}>Share your creation!</Text>
               </View>
 
               <TouchableOpacity
-                style={styles.closeAboutButton}
+                style={styles.closeModalButton}
                 onPress={() => setIsAboutVisible(false)}
               >
-                <Text style={styles.closeAboutText}>Got it!</Text>
+                <Text style={styles.closeModalText}>Awesome!</Text>
               </TouchableOpacity>
             </View>
           </View>
         </Modal>
 
-        {/* ABOUT BUTTON (Bottom Left) */}
-        {currentScreen === 'dressup' && (
-          <TouchableOpacity
-            style={styles.aboutButton}
-            onPress={() => setIsAboutVisible(true)}
-          >
-            <Text style={styles.aboutButtonText}>?</Text>
-          </TouchableOpacity>
-        )}
       </LinearGradient>
     </GestureHandlerRootView>
   );
@@ -847,191 +929,169 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     alignItems: 'center',
-    width: '100%',
-    paddingTop: 80,
-    paddingBottom: 50,
-    flexGrow: 1,
-  },
-  screenContainer: {
-    flex: 1,
-    alignItems: 'center',
-    width: '100%',
-    paddingTop: 80,
+    paddingVertical: 60,
+    paddingBottom: 40,
   },
   title: {
-    fontSize: 56,
+    fontSize: 48,
     fontWeight: '900',
-    color: 'white',
-    marginBottom: 20,
-    textAlign: 'center',
-    textShadowColor: 'rgba(0,0,0,0.3)',
+    color: '#ffffff',
+    textShadowColor: 'rgba(0, 0, 0, 0.2)',
     textShadowOffset: { width: 2, height: 2 },
     textShadowRadius: 5,
-    fontFamily: 'sans-serif-rounded', // Trying a rounded font if available
+    marginBottom: 20,
+    marginTop: 0,
+    fontFamily: 'System', // Bold system font
+    letterSpacing: 2,
   },
-  // Full Screen Mode
+  previewContainer: {
+    width: 280,
+    height: 280,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 0,
+  },
+  cardGlow: {
+    width: 260,
+    height: 260,
+    backgroundColor: 'white',
+    borderRadius: 130, // Circle
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#fff',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 20,
+    elevation: 20,
+    borderWidth: 8,
+    borderColor: 'rgba(255,255,255,0.8)',
+  },
+  previewImage: {
+    width: 200,
+    height: 200,
+    resizeMode: 'contain',
+  },
+  placeholderBox: {
+    width: 200,
+    height: 200,
+    borderWidth: 4,
+    borderColor: 'rgba(255,255,255,0.5)',
+    borderStyle: 'dashed',
+    borderRadius: 100,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.1)',
+  },
+  placeholderText: {
+    fontSize: 80,
+    color: 'rgba(255,255,255,0.5)',
+    fontWeight: 'bold',
+  },
+  button: {
+    backgroundColor: '#FFD93D', // Nintendo Yellow
+    paddingVertical: 18,
+    paddingHorizontal: 40,
+    borderRadius: 30,
+    width: '80%',
+    alignItems: 'center',
+    marginTop: 20,
+    marginBottom: 40,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+    borderWidth: 4,
+    borderColor: '#fff',
+  },
+  buttonDisabled: {
+    backgroundColor: '#ccc',
+    opacity: 0.7,
+    borderColor: '#999',
+  },
+  buttonText: {
+    color: '#333',
+    fontSize: 24,
+    fontWeight: '900',
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+  },
+  iconText: {
+    fontSize: 24,
+    marginRight: 10,
+  },
+  instructionText: {
+    fontSize: 16,
+    color: '#555',
+    flex: 1,
+  },
   fullScreenContainer: {
     flex: 1,
-    width: '100%',
-    height: '100%',
+    backgroundColor: 'transparent', // SHOW GRADIENT
   },
-  backgroundImage: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
-  },
-  // Header Layout
-  // Header Layout
   headerRow: {
     position: 'absolute',
-    top: 50, // Safe area
-    left: 0,
-    width: '100%',
-    direction: 'ltr', // Fix for RTL devices: Force LTR layout so buttons stay on Left
-    paddingLeft: 20, // Left Push
+    top: 50, // Safe Area
+    left: 20,
+    right: 20,
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-start', // Tight Left Align
-    gap: 12, // Consistent Gap
-    zIndex: 10,
+    justifyContent: 'space-between',
+    zIndex: 1000,
+    // Add gap to space buttons out
+    gap: 10,
   },
-  // Nintendo Style 3D Buttons 🎮
   nintendoButton: {
     width: 50,
     height: 50,
     borderRadius: 25,
+    backgroundColor: 'white',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 2,
-    borderBottomWidth: 5, // 3D Pop
-    // Shadow for depth
+    borderBottomWidth: 4,
+    borderColor: '#ddd',
     shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
-    shadowRadius: 2,
+    shadowRadius: 3,
     elevation: 5,
-  },
-  nintendoText: {
-    fontSize: 28,
-    fontWeight: '900',
-    color: 'white',
-    // Text Stroke/Shadow for readability
-    textShadowColor: 'rgba(0,0,0,0.5)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 1,
-    marginTop: -2, // Optical center
   },
   controlDisabled: {
     opacity: 0.5,
-    // Grayscale? Handled by opacity for now
+    backgroundColor: '#e0e0e0',
+    borderColor: '#bdbdbd',
+  },
+  nintendoText: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: 'white',
+    textShadowColor: 'rgba(0,0,0,0.3)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 1,
   },
   maximizedDisplayArea: {
     flex: 1,
     width: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
+    height: '100%',
+    backgroundColor: 'transparent',
+    overflow: 'hidden', // Clip items
   },
-  maximizedImage: {
-    width: '95%',
-    height: '95%',
-    resizeMode: 'contain',
-  },
-  accessoryLayerMax: {
+  backgroundImage: {
     position: 'absolute',
-    width: '95%',
-    height: '95%',
-    resizeMode: 'contain',
-  },
-
-  // ... Shared Styles ...
-  // Screen 1 Styles
-  previewContainer: {
-    height: 320,
-    justifyContent: 'center',
-    marginTop: 10,
-    marginBottom: 30,
-  },
-  cardGlow: {
-    shadowColor: 'white',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 20,
-    elevation: 10,
-  },
-  previewImage: {
-    width: 300,
-    height: 300,
-    resizeMode: 'contain',
-  },
-  placeholderBox: {
-    width: 260,
-    height: 260,
-    borderRadius: 130,
-    backgroundColor: 'rgba(255,255,255,0.3)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 6,
-    borderColor: 'white',
-    borderStyle: 'dashed',
-  },
-  placeholderText: {
-    color: 'white',
-    fontSize: 100,
-    fontWeight: 'bold',
-  },
-  button: {
-    backgroundColor: '#FF6B6B', // Fun coral color
-    paddingVertical: 20,
-    paddingHorizontal: 60,
-    borderRadius: 50,
-    marginTop: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    elevation: 5,
-  },
-  buttonDisabled: {
-    backgroundColor: '#ccc',
-    shadowOpacity: 0,
-  },
-  buttonText: {
-    color: 'white',
-    fontSize: 32,
-    fontWeight: 'bold',
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
   },
   layerContainer: {
     width: '100%',
     height: '100%',
-    position: 'relative',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  // ABOUT PAGE STYLES
-  aboutButton: {
-    position: 'absolute',
-    bottom: 30,
-    left: 20,
-    width: 60, // Slightly bigger
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: 'rgba(255,255,255,0.9)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#66a6ff',
-    shadowColor: '#000',
-    shadowOpacity: 0.4,
-    shadowRadius: 5,
-    elevation: 20, // Increased elevation
-    zIndex: 999, // Max zIndex
-  },
-  aboutButtonText: {
-    fontSize: 34,
-    fontWeight: 'bold',
-    color: '#66a6ff',
+  maximizedImage: {
+    width: STICKER_SIZE, // 300
+    height: STICKER_SIZE,
+    resizeMode: 'contain',
+    zIndex: -1, // Base layer (behind accessories)
   },
   modalOverlay: {
     flex: 1,
@@ -1040,69 +1100,81 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   aboutCard: {
-    width: '80%',
+    width: '85%',
     backgroundColor: 'white',
-    borderRadius: 20,
-    padding: 25,
+    borderRadius: 30,
+    padding: 30,
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
-    elevation: 10,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.25,
+    shadowRadius: 20,
+    elevation: 20,
   },
   aboutTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
+    fontSize: 32,
+    fontWeight: '900',
     color: '#FF6B6B',
     marginBottom: 5,
   },
   aboutVersion: {
-    fontSize: 14,
-    color: '#888',
+    fontSize: 16,
+    color: '#999',
     marginBottom: 20,
   },
   aboutSection: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
+    alignSelf: 'flex-start',
     marginBottom: 10,
     marginTop: 10,
+    color: '#333',
   },
   aboutText: {
     fontSize: 16,
-    color: '#555',
-    marginBottom: 10,
+    color: '#666',
+    alignSelf: 'flex-start',
+    marginBottom: 5,
+    marginLeft: 10,
   },
   instructionRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 12,
     width: '100%',
     paddingHorizontal: 10,
   },
-  iconText: {
-    fontSize: 24,
-    marginRight: 10,
-    width: 30,
-    textAlign: 'center',
-  },
-  instructionText: {
-    fontSize: 16,
-    color: '#555',
-    flex: 1,
-  },
-  closeAboutButton: {
-    marginTop: 25,
+  closeModalButton: {
+    marginTop: 20,
     backgroundColor: '#4ECDC4',
-    paddingVertical: 12,
-    paddingHorizontal: 30,
+    paddingVertical: 15,
+    paddingHorizontal: 40,
     borderRadius: 25,
-    elevation: 2,
+    borderBottomWidth: 4,
+    borderColor: '#36B9B0',
   },
-  closeAboutText: {
+  closeModalText: {
     color: 'white',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  aboutButton: {
+    position: 'absolute',
+    top: 50,
+    right: 30,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.8)',
+    zIndex: 100, // Top layer
+  },
+  aboutButtonText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: 'white',
   },
 });
