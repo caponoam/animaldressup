@@ -56,4 +56,4 @@ The output file will be at `android/app/build/outputs/bundle/release/app-release
 
 ## License
 
-Copyright © 2024 Animal Dress Up. All rights reserved.
+Copyright © 2025 Animal Dress Up. All rights reserved.
