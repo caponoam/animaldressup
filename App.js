@@ -920,8 +920,8 @@ const styles = StyleSheet.create({
   },
   aboutButton: {
     position: 'absolute',
-    top: 50,
-    right: 30,
+    bottom: 40,
+    left: 30,
     width: 40,
     height: 40,
     borderRadius: 20,

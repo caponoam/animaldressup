@@ -5,6 +5,8 @@ export const backgrounds = [
     { id: 'space', source: require('../assets/backgrounds/space.png'), name: 'Space' },
     { id: 'supermarket', source: require('../assets/backgrounds/supermarket.png'), name: 'Supermarket' },
     { id: 'basketball_court', source: require('../assets/backgrounds/basketball_court.png'), name: 'Court' },
+    { id: 'beach', source: require('../assets/backgrounds/beach.png'), name: 'Beach' },
+    { id: 'rainforest', source: require('../assets/backgrounds/rainforest.png'), name: 'Rainforest' },
     { id: 'none', source: null, name: 'None' },
 ];
 
@@ -153,4 +155,9 @@ export const COMPOSITES = {
     'sloth_red_shirt': require('../assets/clothes/tops/sloth_red_shirt_composite.png'),
     'sloth_hawaiian_shirt': require('../assets/clothes/tops/sloth_hawaiian_shirt_composite.png'),
     'sloth_dress_shirt': require('../assets/clothes/tops/sloth_dress_shirt_composite.png'),
+
+    'sugar_glider_red_shirt': require('../assets/clothes/tops/sugar_glider_red_shirt_composite.png'),
+    'sugar_glider_hawaiian_shirt': require('../assets/clothes/tops/sugar_glider_hawaiian_shirt_composite.png'),
+    'sugar_glider_dress_shirt': require('../assets/clothes/tops/sugar_glider_dress_shirt_composite.png'),
+
 };

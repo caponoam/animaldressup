@@ -10,4 +10,5 @@ export const BASE_ANIMALS = [
     { id: 'lion', source: require('../assets/animals/lion.png') },
     { id: 'tiger', source: require('../assets/animals/tiger.png') },
     { id: 'sloth', source: require('../assets/animals/sloth.png') },
+    { id: 'sugar_glider', source: require('../assets/animals/sugar_glider.png') },
 ];
