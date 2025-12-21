@@ -13,21 +13,14 @@ import AnimalPicker from './components/AnimalPicker';
 import SlidingDrawer from './components/SlidingDrawer';
 import DraggableAccessor from './components/DraggableAccessor';
 import SaveModal from './components/SaveModal';
+import AboutModal from './components/AboutModal';
 import SavedOutfitsList from './components/SavedOutfitsList';
 
 // DATA DEFINITIONS
-const BASE_ANIMALS = [
-  { id: 'bear', source: require('./assets/animals/bear.png') },
-  { id: 'bunny', source: require('./assets/animals/bunny.png') },
-  { id: 'cat', source: require('./assets/animals/cat.png') },
-  { id: 'dog', source: require('./assets/animals/dog.png') },
-  { id: 'mouse', source: require('./assets/animals/mouse.png') },
-  { id: 'monkey', source: require('./assets/animals/monkey.png') },
-  { id: 'capybara', source: require('./assets/animals/capybara.png') },
-  { id: 'penguin', source: require('./assets/animals/penguin.png') },
-  { id: 'lion', source: require('./assets/animals/lion.png') },
-  { id: 'tiger', source: require('./assets/animals/tiger.png') },
-];
+import { BASE_ANIMALS } from './data/animals';
+
+// DATA DEFINITIONS (BASE_ANIMALS moved to data/animals.js)
+
 
 const backgrounds = [
   { id: 'park', source: require('./assets/backgrounds/park.png'), name: 'Park' },
@@ -131,6 +124,9 @@ const COMPOSITES = {
   'penguin_red_shirt': require('./assets/clothes/tops/penguin_red_shirt_composite.png'),
   'penguin_hawaiian_shirt': require('./assets/clothes/tops/penguin_hawaiian_shirt_composite.png'),
   'penguin_dress_shirt': require('./assets/clothes/tops/penguin_dress_shirt_composite.png'),
+  'sloth_red_shirt': require('./assets/clothes/tops/sloth_red_shirt_composite.png'),
+  'sloth_hawaiian_shirt': require('./assets/clothes/tops/sloth_hawaiian_shirt_composite.png'),
+  'sloth_dress_shirt': require('./assets/clothes/tops/sloth_dress_shirt_composite.png'),
 };
 
 export default function App() {
@@ -374,6 +370,11 @@ export default function App() {
       torso: { width: 180, height: 220, y: 120 },
       hat: { y: -140, scale: 0.42 },
       glasses: { y: -60, scale: 0.4 },
+    },
+    sloth: {
+      torso: { width: 180, height: 160, y: 120 },
+      hat: { y: -130, scale: 0.4 },
+      glasses: { y: -50, scale: 0.4 },
     },
   };
 
@@ -876,47 +877,10 @@ export default function App() {
         />
 
         {/* ABOUT MODAL */}
-        <Modal
-          animationType="fade"
-          transparent={true}
+        <AboutModal
           visible={isAboutVisible}
-          onRequestClose={() => setIsAboutVisible(false)}
-        >
-          <View style={styles.modalOverlay}>
-            <View style={styles.aboutCard}>
-              <Text style={styles.aboutTitle}>Dress It Up! 🐻</Text>
-              <Text style={styles.aboutVersion}>v1.2.0</Text>
-
-              <Text style={styles.aboutSection}>Created by:</Text>
-              <Text style={styles.aboutText}>Uma Wolf</Text>
-
-              <Text style={styles.aboutSection}>How to Play:</Text>
-              <View style={styles.instructionRow}>
-                <Text style={styles.iconText}>👆</Text>
-                <Text style={styles.instructionText}>Tap items to ADD (Unlimited!)</Text>
-              </View>
-              <View style={styles.instructionRow}>
-                <Text style={styles.iconText}>🤏</Text>
-                <Text style={styles.instructionText}>Pinch to Resize & Rotate</Text>
-              </View>
-              <View style={styles.instructionRow}>
-                <Text style={styles.iconText}>🗑️</Text>
-                <Text style={styles.instructionText}>Drag items to Trash (Top Center)</Text>
-              </View>
-              <View style={styles.instructionRow}>
-                <Text style={styles.iconText}>📸</Text>
-                <Text style={styles.instructionText}>Share your creation!</Text>
-              </View>
-
-              <TouchableOpacity
-                style={styles.closeModalButton}
-                onPress={() => setIsAboutVisible(false)}
-              >
-                <Text style={styles.closeModalText}>Awesome!</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </Modal>
+          onClose={() => setIsAboutVisible(false)}
+        />
 
       </LinearGradient>
     </GestureHandlerRootView>
@@ -1098,65 +1062,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  aboutCard: {
-    width: '85%',
-    backgroundColor: 'white',
-    borderRadius: 30,
-    padding: 30,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.25,
-    shadowRadius: 20,
-    elevation: 20,
-  },
-  aboutTitle: {
-    fontSize: 32,
-    fontWeight: '900',
-    color: '#FF6B6B',
-    marginBottom: 5,
-  },
-  aboutVersion: {
-    fontSize: 16,
-    color: '#999',
-    marginBottom: 20,
-  },
-  aboutSection: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    alignSelf: 'flex-start',
-    marginBottom: 10,
-    marginTop: 10,
-    color: '#333',
-  },
-  aboutText: {
-    fontSize: 16,
-    color: '#666',
-    alignSelf: 'flex-start',
-    marginBottom: 5,
-    marginLeft: 10,
-  },
-  instructionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-    width: '100%',
-    paddingHorizontal: 10,
-  },
-  closeModalButton: {
-    marginTop: 20,
-    backgroundColor: '#4ECDC4',
-    paddingVertical: 15,
-    paddingHorizontal: 40,
-    borderRadius: 25,
-    borderBottomWidth: 4,
-    borderColor: '#36B9B0',
-  },
-  closeModalText: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: 'bold',
   },
   aboutButton: {
     position: 'absolute',

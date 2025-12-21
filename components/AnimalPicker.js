@@ -1,19 +1,9 @@
 import React, { useMemo } from 'react';
 import { View, Image, TouchableOpacity, StyleSheet, FlatList } from 'react-native';
 
+import { BASE_ANIMALS } from '../data/animals';
+
 export default function AnimalPicker({ selectedAnimal, onSelectAnimal }) {
-    const BASE_ANIMALS = [
-        { id: 'bear', source: require('../assets/animals/bear.png') },
-        { id: 'bunny', source: require('../assets/animals/bunny.png') },
-        { id: 'cat', source: require('../assets/animals/cat.png') },
-        { id: 'dog', source: require('../assets/animals/dog.png') },
-        { id: 'mouse', source: require('../assets/animals/mouse.png') },
-        { id: 'monkey', source: require('../assets/animals/monkey.png') },
-        { id: 'capybara', source: require('../assets/animals/capybara.png') },
-        { id: 'penguin', source: require('../assets/animals/penguin.png') },
-        { id: 'lion', source: require('../assets/animals/lion.png') },
-        { id: 'tiger', source: require('../assets/animals/tiger.png') },
-    ];
 
     const ITEM_WIDTH = 140;
     const ITEM_GAP = 15;
@@ -42,11 +32,12 @@ export default function AnimalPicker({ selectedAnimal, onSelectAnimal }) {
             renderItem={renderItem}
             keyExtractor={(item) => item.id}
             horizontal
-            showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.container}
+            decelerationRate={0}
             snapToInterval={TOTAL_ITEM_SIZE}
-            decelerationRate="fast"
-            snapToAlignment="center"
+            snapToAlignment="start"
+            bounces={false}
+            overScrollMode="never"
         />
     );
 }

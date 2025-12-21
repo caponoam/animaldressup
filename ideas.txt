@@ -3,25 +3,11 @@ apply clothes and accessories to the animal properly
 
 Drawers can't hide each other
 
-add about page with ? icon bottom left corner with app name, version, credits, and simple usage details
-
-nicer looking buttons
-
-[Storage] Save edits for future use/edit (prompt for name of edit, save to file)
-
-
 Gems (in app currency)
 Gem "jar"
 
 Poses chooser
-about page crediting Uma
-Version number
-History of edited animals
-Easter eggs
 
-app name: Animal Dress Up
-app icon: ?
-build apk
 
 
 ============================================================
@@ -38,10 +24,30 @@ Ask before deleting all changes (are you sure you want to delete all changes?)
 
 drag items already on the animal to trash to remove them
 
+about page crediting Uma
+Version number
+History of edited animals
+Easter eggs
+
+app name: Animal Dress Up
+app icon: ?
+build apk
+
+add about page with ? icon bottom left corner with app name, version, credits, and simple usage details
+
+nicer looking buttons
+
+[Storage] Save edits for future use/edit (prompt for name of edit, save to file)
+
 
 PROMPTS
 
+Animal:
+A cute, cartoon-style sloth standing up on two legs, facing forward suitable for a paper-doll style dress up game.
+It should have a friendly expression. The style should match existing flat 2D vector art. 
+Simple shapes, clean lines. No background (transparent).
+
 Composite:
 Combine these two images into a single composite image. The bear should be wearing the hawaiian shirt. 
-The shirt should fit naturally on the bear's torso. Maintenance the exact art style, resolution, and flat vector aesthetic. 
+The shirt should fit naturally on the bear's torso. Maintain the exact art style, resolution, and flat vector aesthetic. 
 The output should be the bear dressed in the shirt on a transparent background.
