@@ -28,11 +28,15 @@ export const jewelry = [
     { id: 'hoop_earrings', type: 'jewelry', source: require('../assets/clothes/jewelry/hoop_earrings.png'), name: 'Hoops' },
     { id: 'heart_necklace', type: 'jewelry', source: require('../assets/clothes/jewelry/heart_necklace.png'), name: 'Necklace' },
     { id: 'gold_watch', type: 'jewelry', source: require('../assets/clothes/jewelry/gold_watch.png'), name: 'Watch' },
+    { id: 'gold_chain', type: 'jewelry', source: require('../assets/clothes/jewelry/gold_chain.png'), name: 'Gold Chain' },
+    { id: 'diamond_stud', type: 'jewelry', source: require('../assets/clothes/jewelry/diamond_stud.png'), name: 'Diamond Stud' },
 ];
 
 export const neckwear = [
     { id: 'scarf', type: 'neckwear', source: require('../assets/clothes/neckwear/scarf.png'), name: 'Scarf' },
     { id: 'bow_tie', type: 'neckwear', source: require('../assets/clothes/neckwear/bow_tie.png'), name: 'Bow Tie' },
+    { id: 'blue_bandana', type: 'neckwear', source: require('../assets/clothes/neckwear/blue_bandana.png'), name: 'Blue Bandana' },
+    { id: 'spiked_collar', type: 'neckwear', source: require('../assets/clothes/neckwear/spiked_collar.png'), name: 'Spiked Collar' },
 ];
 
 export const tops = [

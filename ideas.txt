@@ -53,3 +53,13 @@ Composite:
 Combine these two images into a single composite image. The bear should be wearing the hawaiian shirt. 
 The shirt should fit naturally on the bear's torso. Maintain the exact art style, resolution, and flat vector aesthetic. 
 The output should be the bear dressed in the shirt on a transparent background.
+
+Accessories:
+A gold chain, isolated on a transparent background, cartoon style, flat vector art, 
+suitable for a paper doll dress up game.
+
+A single diamond stud earring, silver setting, isolated on a transparent background, cartoon style, flat vector art, 
+suitable for a paper doll dress up game.
+
+A black leather dog collar with silver spikes, isolated on a transparent background, cartoon style, flat vector art, 
+suitable for a paper doll dress up game.

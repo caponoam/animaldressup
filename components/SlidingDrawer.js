@@ -175,6 +175,11 @@ export default function SlidingDrawer({
                         ))}
                     </View>
                 </AnimatedReanimated.ScrollView>
+
+                {/* Subtle More Indicator */}
+                <View style={styles.moreIndicator} pointerEvents="none">
+                    <Text style={styles.moreText}>▼</Text>
+                </View>
             </View>
         </Animated.View>
     );
@@ -272,5 +277,19 @@ const styles = StyleSheet.create({
         fontSize: 10,
         fontWeight: 'bold',
         color: '#555',
+    },
+    moreIndicator: {
+        position: 'absolute',
+        bottom: 5,
+        left: 0,
+        right: 0,
+        alignItems: 'center',
+        justifyContent: 'center',
+        opacity: 0.6,
+    },
+    moreText: {
+        fontSize: 12,
+        color: '#999',
+        fontWeight: 'bold',
     },
 });
