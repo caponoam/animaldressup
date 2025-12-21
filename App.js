@@ -86,7 +86,7 @@ const CENTER_Y = (height * 0.95) / 2 - 300;
 // Constants matching the Visual Layout of the Trash Button
 const TRASH_CONFIG = {
   x: 231, // Align with 4th button center (Start 20 + 3*62 + 25)
-  y: 75,  // Align with header row (Top 50 + Half Height 25)
+  y: 150,  // Drop Zone below the icon
   radius: 40, // Tighter Hit Radius
   visualRadius: 60 // Feedback Radius
 };
@@ -135,6 +135,10 @@ export default function App() {
   const [selectedAnimalId, setSelectedAnimalId] = useState(null); // Track ID
   const [currentOutfitId, setCurrentOutfitId] = useState(null); // Track loaded/saved outfit ID for overwriting
   const [currentScreen, setCurrentScreen] = useState('selection'); // 'selection' | 'dressup'
+  const [savedOutfits, setSavedOutfits] = useState([]);
+  const [isSaveModalVisible, setIsSaveModalVisible] = useState(false);
+  const [trashLayout, setTrashLayout] = useState(null);
+  const [isAboutVisible, setIsAboutVisible] = useState(false);
 
   // EASTER EGG STATE 🥚
   const [eggCount, setEggCount] = useState(0);
@@ -261,9 +265,8 @@ export default function App() {
   const [historyIndex, setHistoryIndex] = useState(0);
 
   // SAVE / LOAD STATE
-  const [savedOutfits, setSavedOutfits] = useState([]);
-  const [isSaveModalVisible, setIsSaveModalVisible] = useState(false);
-  const [isAboutVisible, setIsAboutVisible] = useState(false);
+  // SAVE / LOAD STATE references moved to top
+  const TRASH_ZONE_HEIGHT = 120; // Hardcoded height for top bar kill zone
 
   // Derived current state from history
   const currentOutfit = history[historyIndex].outfit;
@@ -391,8 +394,8 @@ export default function App() {
       yOffset = animalFit.torso.y;
     } else if (type === 'jewelry') {
       yOffset = animalFit.torso.y - 30;
-      scaleX = 0.4;
-      scaleY = 0.4;
+      scaleX = 0.25;
+      scaleY = 0.25;
     } else if (type === 'neckwear') {
       yOffset = animalFit.torso.y - 20;
       scaleX = 0.4;
@@ -426,8 +429,12 @@ export default function App() {
     let initialY = transform.y;
 
     if (dropCoords && typeof dropCoords.x === 'number' && typeof dropCoords.y === 'number') {
-      initialX = dropCoords.x - 300;
-      initialY = dropCoords.y - 300;
+      // Account for Canvas Offset (Pan) and Gravity
+      const canvasOffsetX = animalX.value || 0;
+      const canvasOffsetY = (animalY.value || 0) + (gravityOffset.value || 0);
+
+      initialX = dropCoords.x - 300 - canvasOffsetX;
+      initialY = dropCoords.y - 300 - canvasOffsetY;
     }
 
     const newItem = {
@@ -445,16 +452,12 @@ export default function App() {
     addToHistory(newOutfit, undefined);
   };
 
-  const updateAccessoryTransform = (type, instanceId, x, y, scaleX, scaleY, rotation) => {
+  const updateAccessoryTransform = (type, instanceId, x, y, scaleX, scaleY, rotation, shouldDelete) => {
     const newOutfit = { ...currentOutfit };
     if (!newOutfit[type]) return;
 
-    const itemCenterX = x + 300;
-    const itemCenterY = y + 300;
-
-    const distToTrash = Math.sqrt(Math.pow(itemCenterX - TRASH_CONFIG.x, 2) + Math.pow(itemCenterY - TRASH_CONFIG.y, 2));
-
-    if (distToTrash < TRASH_CONFIG.radius) {
+    // Check explicit delete flag from DraggableAccessor
+    if (shouldDelete) {
       newOutfit[type] = newOutfit[type].filter(item => item.instanceId !== instanceId);
       addToHistory(newOutfit, undefined);
       return;
@@ -498,7 +501,21 @@ export default function App() {
   });
 
   const setBackground = (source, id) => {
-    addToHistory(undefined, source);
+    setCurrentBackground({ source, id });
+  };
+
+  const onTrashLayout = (event) => {
+    const { x, y, width, height } = event.nativeEvent.layout;
+    // Calculate absolute position based on headerRow styles (top: 50, left: 20)
+    // We want the drop zone BELOW the icon.
+    const absoluteX = 20 + x + (width / 2);
+    const absoluteY = 50 + y + height + 40; // 40px gap below icon
+
+    setTrashLayout({
+      x: absoluteX,
+      y: absoluteY,
+      radius: 50, // Hit radius
+    });
   };
 
   const resetOutfit = () => {
@@ -854,8 +871,8 @@ export default function App() {
                         initialScaleX={item.scaleX}
                         initialScaleY={item.scaleY}
                         initialRotation={item.rotation}
-                        garbageConfig={TRASH_CONFIG} // Pass Config
-                        onDragEnd={(pos) => updateAccessoryTransform(type, item.instanceId, pos.x, pos.y, pos.scaleX, pos.scaleY, pos.rotation)}
+                        garbageConfig={{ type: 'top', height: 120 }} // Simplified Top Zone
+                        onDragEnd={(pos) => updateAccessoryTransform(type, item.instanceId, pos.x, pos.y, pos.scaleX, pos.scaleY, pos.rotation, pos.shouldDelete)}
                       />
                     ))
                   })}
@@ -997,7 +1014,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 50, // Safe Area
     left: 20,
-    right: 20,
+    right: 90, // Avoid overlapping Drawer Tabs (60px + padding)
     flexDirection: 'row',
     justifyContent: 'space-between',
     zIndex: 1000,

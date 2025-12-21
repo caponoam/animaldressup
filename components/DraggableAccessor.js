@@ -26,6 +26,18 @@ export default function DraggableAccessor({ source, initialX, initialY, initialS
         rotation.value = withSpring(initialRotation);
     }, [initialX, initialY, initialScaleX, initialScaleY, initialRotation]);
 
+    const trashHeight = useSharedValue(0);
+    const hasTrashConfig = useSharedValue(0); // Boolean flag
+
+    useEffect(() => {
+        if (garbageConfig && garbageConfig.type === 'top') {
+            trashHeight.value = garbageConfig.height;
+            hasTrashConfig.value = 1;
+        } else {
+            hasTrashConfig.value = 0;
+        }
+    }, [garbageConfig]);
+
     // Drag Gesture
     const dragGesture = Gesture.Pan()
         .onStart(() => {
@@ -43,13 +55,13 @@ export default function DraggableAccessor({ source, initialX, initialY, initialS
             translateX.value = nextX;
             translateY.value = nextY;
 
-            // Check Garbage Proximity if config exists
-            if (garbageConfig) {
-                const itemCenterX = nextX + 300;
-                const itemCenterY = nextY + 300;
-                const dist = Math.sqrt(Math.pow(itemCenterX - garbageConfig.x, 2) + Math.pow(itemCenterY - garbageConfig.y, 2));
+            // Check Garbage Proximity using Shared Values & Absolute Coordinates
+            if (hasTrashConfig.value === 1) {
+                // Use absolute pointer position. 
+                // For Top Zone: check if pointerY < trashHeight
+                const pointerY = event.absoluteY;
 
-                if (dist < garbageConfig.radius) {
+                if (pointerY < trashHeight.value) {
                     isDeleting.value = 1; // True
                 } else {
                     isDeleting.value = 0; // False
@@ -57,14 +69,17 @@ export default function DraggableAccessor({ source, initialX, initialY, initialS
             }
         })
         .onEnd(() => {
+            const shouldDelete = isDeleting.value === 1;
             isDeleting.value = 0; // Reset visual
+
             if (onDragEnd) {
                 runOnJS(onDragEnd)({
                     x: translateX.value,
                     y: translateY.value,
                     scaleX: scaleX.value,
                     scaleY: scaleY.value,
-                    rotation: rotation.value
+                    rotation: rotation.value,
+                    shouldDelete: shouldDelete // Pass delete flag
                 });
             }
         });
@@ -133,7 +148,7 @@ export default function DraggableAccessor({ source, initialX, initialY, initialS
         const isTrashHover = isDeleting.value === 1;
 
         return {
-            opacity: withTiming(isTrashHover ? 0.5 : 1, { duration: 100 }),
+            opacity: withTiming(isTrashHover ? 0.3 : 1, { duration: 100 }),
             transform: [
                 { translateX: translateX.value },
                 { translateY: translateY.value },
@@ -141,7 +156,7 @@ export default function DraggableAccessor({ source, initialX, initialY, initialS
                 { scaleY: scaleY.value },
                 // Apply trash shrink effect as a separate scale transform
                 // This avoids multiplying scalar by animation object
-                { scale: withSpring(isTrashHover ? 0.7 : 1) },
+                { scale: withSpring(isTrashHover ? 0.4 : 1) },
                 { rotate: `${rotation.value}rad` }
             ],
         };

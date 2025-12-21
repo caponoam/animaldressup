@@ -1,12 +1,14 @@
 import React, { useState, useRef } from 'react';
 import { View, TouchableOpacity, Image, StyleSheet, Animated, Text, ScrollView, Dimensions, I18nManager } from 'react-native';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
-import AnimatedReanimated, { useSharedValue, useAnimatedStyle, withSpring, runOnJS } from 'react-native-reanimated';
+import AnimatedReanimated, { useSharedValue, useAnimatedStyle, withSpring, runOnJS, useAnimatedScrollHandler, interpolate, Extrapolate } from 'react-native-reanimated';
 
-const DRAWER_WIDTH = 160;
+const DRAWER_WIDTH = 120;
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-function DraggableDrawerItem({ item, active, color, onSelect, allowDrag }) {
+const ITEM_HEIGHT_ESTIMATE = 95; // Approx height of item + gap
+
+function DraggableDrawerItem({ item, active, color, onSelect, allowDrag, scrollY, index, drawerHeight }) {
     const translateX = useSharedValue(0);
     const translateY = useSharedValue(0);
     const isDragging = useSharedValue(false);
@@ -14,6 +16,7 @@ function DraggableDrawerItem({ item, active, color, onSelect, allowDrag }) {
     // Pan Gesture for dragging
     const panGesture = Gesture.Pan()
         .enabled(allowDrag)
+        .activeOffsetX([-10, 10])
         .onStart(() => {
             isDragging.value = true;
         })
@@ -33,13 +36,31 @@ function DraggableDrawerItem({ item, active, color, onSelect, allowDrag }) {
         });
 
     const animatedStyle = useAnimatedStyle(() => {
+        // Visual Clipping Logic with Interpolation
+        const itemY = index * ITEM_HEIGHT_ESTIMATE;
+        const relativeY = itemY - scrollY.value; // Position relative to view window
+
+        // Interpolate opacity for smooth but strict clipping at edges
+        // Top Edge: Fade in from -60 to -10
+        // Bottom Edge: Fade out from (Height - ItemHeight) to Height
+        const interpolatedOpacity = interpolate(
+            relativeY,
+            [-60, -10, drawerHeight - ITEM_HEIGHT_ESTIMATE - 10, drawerHeight - 40],
+            [0, 1, 1, 0],
+            Extrapolate.CLAMP
+        );
+
+        // Force visible if dragging, otherwise strict clipping
+        const opacity = isDragging.value ? 1 : interpolatedOpacity;
+
         return {
             transform: [
                 { translateX: translateX.value },
                 { translateY: translateY.value },
                 { scale: isDragging.value ? 1.2 : 1 }
             ],
-            zIndex: isDragging.value ? 9999 : 1, // Attempt to float above
+            zIndex: isDragging.value ? 9999 : 1,
+            opacity: withSpring(opacity, { duration: 50 })
         };
     });
 
@@ -82,9 +103,13 @@ export default function SlidingDrawer({
     const [isOpen, setIsOpen] = useState(false);
     const slideAnim = useRef(new Animated.Value(DRAWER_WIDTH)).current;
 
-    // Calculate Dynamic Height
-    // Reserve space for bottom safe area (approx 40) + Top Offset
-    const maxContentHeight = SCREEN_HEIGHT - topOffset - 60; // 60 for title + padding
+    // Fixed height for ~4 items (approx 90px each + margins)
+    const MAX_DRAWER_HEIGHT = 400;
+
+    const scrollY = useSharedValue(0);
+    const scrollHandler = useAnimatedScrollHandler((event) => {
+        scrollY.value = event.contentOffset.y;
+    });
 
     const toggleDrawer = () => {
         const toValue = isOpen ? DRAWER_WIDTH : 0;
@@ -125,15 +150,17 @@ export default function SlidingDrawer({
             </TouchableOpacity>
 
             {/* DRAWER CONTENT */}
-            <View style={[styles.drawerContent, { maxHeight: maxContentHeight + 50 }]}>
+            <View style={[styles.drawerContent, { maxHeight: MAX_DRAWER_HEIGHT }]}>
                 <Text style={[styles.title, { color }]}>{title}</Text>
-                <ScrollView
-                    style={{ maxHeight: maxContentHeight, overflow: 'visible' }} // Attempt overlay: visible
+                <AnimatedReanimated.ScrollView
+                    style={{ maxHeight: MAX_DRAWER_HEIGHT - 40, overflow: 'visible' }}
                     showsVerticalScrollIndicator={true}
-                    contentContainerStyle={{ paddingBottom: 20, overflow: 'visible' }} // Attempt overflow: visible
+                    contentContainerStyle={{ paddingBottom: 20, overflow: 'visible' }}
+                    onScroll={scrollHandler}
+                    scrollEventThrottle={16}
                 >
                     <View style={styles.grid}>
-                        {data.map((item) => (
+                        {data.map((item, index) => (
                             <DraggableDrawerItem
                                 key={item.id}
                                 item={item}
@@ -141,10 +168,13 @@ export default function SlidingDrawer({
                                 color={color}
                                 onSelect={onSelect}
                                 allowDrag={allowDrag}
+                                scrollY={scrollY}
+                                index={index}
+                                drawerHeight={MAX_DRAWER_HEIGHT - 40}
                             />
                         ))}
                     </View>
-                </ScrollView>
+                </AnimatedReanimated.ScrollView>
             </View>
         </Animated.View>
     );
@@ -162,13 +192,13 @@ const styles = StyleSheet.create({
         height: 'auto', // Allow it to shrink/grow
     },
     tab: {
-        width: 70, // Bigger
-        height: 70, // Bigger
-        borderTopLeftRadius: 35, // Rounder
-        borderBottomLeftRadius: 35,
+        width: 60, // Smaller tab to match smaller drawer
+        height: 60,
+        borderTopLeftRadius: 30,
+        borderBottomLeftRadius: 30,
         justifyContent: 'center',
         alignItems: 'center',
-        marginLeft: -70, // Aligned
+        marginLeft: -60, // Aligned
         shadowColor: '#000',
         shadowOpacity: 0.2,
         shadowRadius: 3,
@@ -180,7 +210,7 @@ const styles = StyleSheet.create({
         marginTop: 10,
     },
     tabText: {
-        fontSize: 32, // Bigger Icon
+        fontSize: 28,
         color: 'white',
         textShadowColor: 'rgba(0,0,0,0.2)',
         textShadowOffset: { width: 1, height: 1 },
@@ -189,32 +219,30 @@ const styles = StyleSheet.create({
     drawerContent: {
         flex: 1,
         backgroundColor: 'rgba(255, 255, 255, 0.95)',
-        padding: 10,
+        padding: 5, // Reduced padding
         borderTopLeftRadius: 20,
         borderBottomLeftRadius: 20,
         elevation: 10,
         shadowColor: '#000',
         shadowOpacity: 0.25,
         shadowOffset: { width: -4, height: 4 },
-        // removed fixed height
-        minHeight: 100,
         borderWidth: 1,
         borderColor: '#fff',
+        // overflow: 'hidden', // REMOVED to allow dragging out!
     },
     title: {
         fontWeight: '900',
-        marginBottom: 10,
+        marginBottom: 5,
         textAlign: 'center',
-        fontSize: 16, // Slightly smaller
+        fontSize: 14,
         textTransform: 'uppercase',
         letterSpacing: 1,
     },
     grid: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        justifyContent: 'center',
+        flexDirection: 'column', // Stack vertically
+        flexWrap: 'nowrap',
+        alignItems: 'center',
         gap: 10,
-        // React Native gap property support is inconsistent in older versions but fine in recent Expo
     },
     thumbnailContainer: {
         alignItems: 'center',
