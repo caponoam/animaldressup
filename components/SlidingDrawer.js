@@ -158,6 +158,7 @@ export default function SlidingDrawer({
                     contentContainerStyle={{ paddingBottom: 20, overflow: 'visible' }}
                     onScroll={scrollHandler}
                     scrollEventThrottle={16}
+                    removeClippedSubviews={true}
                 >
                     <View style={styles.grid}>
                         {data.map((item, index) => (

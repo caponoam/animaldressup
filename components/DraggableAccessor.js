@@ -5,7 +5,7 @@ import Animated, { useSharedValue, useAnimatedStyle, runOnJS, withSpring, withTi
 
 const STICKER_SIZE = 600;
 
-export default function DraggableAccessor({ source, initialX, initialY, initialScaleX = 1, initialScaleY = 1, initialRotation = 0, onDragEnd, garbageConfig }) {
+export default function DraggableAccessor({ source, initialX, initialY, initialScaleX = 1, initialScaleY = 1, initialRotation = 0, onDragEnd, garbageConfig, style }) {
     // Shared values for smooth UI thread animations
     const translateX = useSharedValue(initialX);
     const translateY = useSharedValue(initialY);
@@ -13,18 +13,24 @@ export default function DraggableAccessor({ source, initialX, initialY, initialS
     const scaleY = useSharedValue(initialScaleY);
     const rotation = useSharedValue(initialRotation);
     const isDeleting = useSharedValue(0); // 0 or 1
+    const isDragging = useSharedValue(false);
 
     // Context for gestures
     const context = useSharedValue({ x: 0, y: 0, scaleX: 1, scaleY: 1, rotation: 0 });
 
     // Sync props
     useEffect(() => {
-        translateX.value = withSpring(initialX);
-        translateY.value = withSpring(initialY);
-        scaleX.value = withSpring(initialScaleX);
-        scaleY.value = withSpring(initialScaleY);
-        rotation.value = withSpring(initialRotation);
+        // console.log('[DraggableAccessor] Syncing props', { initialX, initialY });
+        translateX.value = initialX; // Direct assignment debug
+        translateY.value = initialY;
+        scaleX.value = initialScaleX;
+        scaleY.value = initialScaleY;
+        rotation.value = initialRotation;
     }, [initialX, initialY, initialScaleX, initialScaleY, initialRotation]);
+
+    useEffect(() => {
+        console.log('[DraggableAccessor] Mounted', { source, initialX, initialY });
+    }, []);
 
     const trashHeight = useSharedValue(0);
     const hasTrashConfig = useSharedValue(0); // Boolean flag
@@ -41,6 +47,7 @@ export default function DraggableAccessor({ source, initialX, initialY, initialS
     // Drag Gesture
     const dragGesture = Gesture.Pan()
         .onStart(() => {
+            isDragging.value = true;
             context.value = {
                 x: translateX.value,
                 y: translateY.value,
@@ -69,6 +76,7 @@ export default function DraggableAccessor({ source, initialX, initialY, initialS
             }
         })
         .onEnd(() => {
+            isDragging.value = false;
             const shouldDelete = isDeleting.value === 1;
             isDeleting.value = 0; // Reset visual
 
@@ -149,6 +157,8 @@ export default function DraggableAccessor({ source, initialX, initialY, initialS
 
         return {
             opacity: withTiming(isTrashHover ? 0.3 : 1, { duration: 100 }),
+            zIndex: isDragging.value ? 9999 : 100, // Explicit zIndex to ensure visibility
+            elevation: isDragging.value ? 9999 : 0, // Android elevation for stacking context
             transform: [
                 { translateX: translateX.value },
                 { translateY: translateY.value },
@@ -164,7 +174,7 @@ export default function DraggableAccessor({ source, initialX, initialY, initialS
 
     return (
         <GestureDetector gesture={composedGesture}>
-            <Animated.View style={[styles.container, animatedStyle]}>
+            <Animated.View style={[styles.container, style, animatedStyle]}>
                 <Image source={source} style={styles.image} />
             </Animated.View>
         </GestureDetector>

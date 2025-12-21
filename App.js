@@ -1,5 +1,6 @@
+
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Image, TouchableOpacity, ScrollView, Alert, Dimensions, Modal, BackHandler } from 'react-native';
+import { StyleSheet, Text, View, Image, TouchableOpacity, ScrollView, Alert, Dimensions, Modal, BackHandler, useWindowDimensions } from 'react-native';
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { GestureHandlerRootView, GestureDetector, Gesture } from 'react-native-gesture-handler';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, withTiming, withRepeat, withSequence, Easing } from 'react-native-reanimated';
@@ -31,6 +32,7 @@ const CENTER_X = (width * 0.95) / 2 - 300;
 const CENTER_Y = (height * 0.95) / 2 - 300;
 
 export default function App() {
+  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
   const viewShotRef = useRef();
   const [selectedAnimal, setSelectedAnimal] = useState(null);
   const [selectedAnimalId, setSelectedAnimalId] = useState(null); // Track ID
@@ -174,13 +176,19 @@ export default function App() {
   const currentBackground = history[historyIndex].background;
 
   const addToHistory = (newOutfit, newBackground) => {
+    // Determine the next state
+    const nextOutfit = newOutfit !== undefined ? newOutfit : currentOutfit;
+    const nextBackground = newBackground !== undefined ? newBackground : currentBackground;
+
     const newSnapshot = {
-      outfit: newOutfit !== undefined ? newOutfit : currentOutfit,
-      background: newBackground !== undefined ? newBackground : currentBackground
+      outfit: nextOutfit,
+      background: nextBackground
     };
+
     const nextHistory = history.slice(0, historyIndex + 1);
     nextHistory.push(newSnapshot);
     setHistory(nextHistory);
+    // console.log('[App] history updated. New length:', nextHistory.length);
     setHistoryIndex(nextHistory.length - 1);
   };
 
@@ -248,13 +256,14 @@ export default function App() {
       scaleY = 0.4;
     }
 
-    return {
+    const result = {
       x: CENTER_X,
       y: CENTER_Y + yOffset,
       scaleX,
       scaleY,
       rotation: 0,
     };
+    return result;
   };
 
   const toggleAccessory = (type, source, itemId, dropCoords) => {
@@ -273,6 +282,11 @@ export default function App() {
 
       initialX = dropCoords.x - 300 - canvasOffsetX;
       initialY = dropCoords.y - 300 - canvasOffsetY;
+    } else {
+      // Offset multiple items slightly so they don't stack perfectly
+      const offset = (items.length * 20);
+      initialX += offset;
+      initialY += offset;
     }
 
     const newItem = {
@@ -339,8 +353,12 @@ export default function App() {
   });
 
   const setBackground = (source, id) => {
+    console.log('[App] setBackground', { id, sourceExists: !!source });
     addToHistory(undefined, source);
   };
+
+  // Debug Render
+  console.log('[App] Render currentBackground:', currentBackground);
 
   const onTrashLayout = (event) => {
     const { x, y, width, height } = event.nativeEvent.layout;
@@ -452,6 +470,13 @@ export default function App() {
     return currentOutfit[type]?.some(item => item.source === source);
   }
 
+  // Composite Logic
+  const currentTopForComposite = currentOutfit.top && currentOutfit.top.length > 0 ? currentOutfit.top[currentOutfit.top.length - 1] : null;
+  const topIdForComposite = currentTopForComposite ? tops.find(t => t.source === currentTopForComposite.source)?.id : null;
+  const compositeKey = `${selectedAnimalId}_${topIdForComposite}`;
+  const isCompositeAvailable = !!COMPOSITES[compositeKey];
+  const renderedAnimalSource = isCompositeAvailable ? COMPOSITES[compositeKey] : selectedAnimal;
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <LinearGradient
@@ -470,12 +495,7 @@ export default function App() {
               <Animated.Text style={[styles.title, floatStyle]}>Pick Your Pal!</Animated.Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.aboutButton}
-              onPress={() => setIsAboutVisible(true)}
-            >
-              <Text style={styles.aboutButtonText}>?</Text>
-            </TouchableOpacity>
+
 
             <View style={styles.previewContainer}>
               {selectedAnimal ? (
@@ -493,11 +513,10 @@ export default function App() {
               <AnimalPicker
                 selectedAnimal={selectedAnimal}
                 onSelectAnimal={(animal) => {
-                  if (animal.id !== selectedAnimalId) {
-                    setHistory([{ outfit: { hat: [], glasses: [], jewelry: [], neckwear: [], top: [], bottoms: [], shoes: [] }, background: null }]);
-                    setHistoryIndex(0);
-                    setCurrentOutfitId(null); // Reset when changing animal (treat as new creation)
-                  }
+                  console.log('[App] Resetting outfit for selected animal:', animal.id);
+                  setHistory([{ outfit: { hat: [], glasses: [], jewelry: [], neckwear: [], top: [], bottoms: [], shoes: [] }, background: null }]);
+                  setHistoryIndex(0);
+                  setCurrentOutfitId(null);
                   setSelectedAnimal(animal.source);
                   setSelectedAnimalId(animal.id);
                 }}
@@ -521,9 +540,14 @@ export default function App() {
           </ScrollView>
         )}
 
+
+
         {/* SCREEN 2: DRESS UP (FULL SCREEN MODE) */}
+
         {currentScreen === 'dressup' && (
-          <View style={styles.fullScreenContainer}>
+          <View style={[styles.fullScreenContainer, { width: windowWidth, height: windowHeight }]}>
+            {/* BACKGROUND LAYER - Explicit Dimensions & zIndex 0 */}
+            {/* BACKGROUND LAYER - REMOVED OUTER DUPLICATE */}
 
             <View style={styles.headerRow}>
               {/* BACK - RED */}
@@ -663,41 +687,26 @@ export default function App() {
             <View style={styles.maximizedDisplayArea} ref={viewShotRef} collapsable={false}>
               {/* BACKGROUND LAYER (Included in Snapshot) */}
               {currentBackground && (
-                <Image source={currentBackground} style={styles.backgroundImage} />
+                <Image
+                  key={`bg-inner-${currentBackground}`}
+                  source={currentBackground}
+                  style={styles.backgroundImage}
+                  onLoad={() => console.log('[App] BG Loaded', currentBackground)}
+                  onError={(e) => console.log('[App] BG Error', e.nativeEvent.error)}
+                />
               )}
               <GestureDetector gesture={animalDragGesture}>
                 <Animated.View style={[styles.layerContainer, layerContainerStyle]}>
-                  {/* Base Animal - Still static center */}
                   {/* Base Animal OR Composite */}
-                  {(() => {
-                    const currentTop = currentOutfit.top && currentOutfit.top.length > 0 ? currentOutfit.top[currentOutfit.top.length - 1] : null;
-                    const topId = currentTop ? tops.find(t => t.source === currentTop.source)?.id : null;
-                    const compositeKey = `${selectedAnimalId}_${topId}`;
-                    const hasComposite = !!COMPOSITES[compositeKey];
-                    const imageSource = hasComposite ? COMPOSITES[compositeKey] : selectedAnimal;
+                  <Image
+                    source={renderedAnimalSource}
+                    style={styles.maximizedImage}
+                  />
 
-                    return (
-                      <Image
-                        source={imageSource}
-                        style={[
-                          styles.maximizedImage,
-                          // Resize specific animals that are too large in the source asset
-                          // Removed override to allow full size as requested
-                          // ['lion', 'tiger'].includes(selectedAnimalId) && { width: '65%', height: '55%' }
-                        ]}
-                      />
-                    );
-                  })()}
-
-                  {/* Draggable Layers (Render order matters for z-index) */}
-                  {/* Order: Shoes -> Bottoms -> Top -> Neckwear -> Jewelry -> Glasses -> Hat */}
+                  {/* Draggable Layers */}
                   {['shoes', 'bottoms', 'top', 'neckwear', 'jewelry', 'glasses', 'hat'].map(type => {
-                    // SKIP rendering the 'top' sticker if we are showing a composite for it
-                    if (type === 'top') {
-                      const currentTop = currentOutfit.top && currentOutfit.top.length > 0 ? currentOutfit.top[currentOutfit.top.length - 1] : null;
-                      const topId = currentTop ? tops.find(t => t.source === currentTop.source)?.id : null;
-                      const compositeKey = `${selectedAnimalId}_${topId}`;
-                      if (COMPOSITES[compositeKey]) return null;
+                    if (type === 'top' && isCompositeAvailable) {
+                      return null;
                     }
 
                     return (currentOutfit[type] || []).map(item => (
@@ -709,14 +718,23 @@ export default function App() {
                         initialScaleX={item.scaleX}
                         initialScaleY={item.scaleY}
                         initialRotation={item.rotation}
-                        garbageConfig={{ type: 'top', height: 120 }} // Simplified Top Zone
+                        garbageConfig={{ type: 'top', height: 120 }}
                         onDragEnd={(pos) => updateAccessoryTransform(type, item.instanceId, pos.x, pos.y, pos.scaleX, pos.scaleY, pos.rotation, pos.shouldDelete)}
+                        style={{ zIndex: 9999 }}
                       />
                     ))
                   })}
                 </Animated.View>
               </GestureDetector>
             </View>
+
+            {/* ABOUT BUTTON (Moved to Edit Screen) */}
+            <TouchableOpacity
+              style={styles.aboutButton}
+              onPress={() => setIsAboutVisible(true)}
+            >
+              <Text style={styles.aboutButtonText}>?</Text>
+            </TouchableOpacity>
           </View>
         )}
 
@@ -737,8 +755,8 @@ export default function App() {
           onClose={() => setIsAboutVisible(false)}
         />
 
-      </LinearGradient>
-    </GestureHandlerRootView>
+      </LinearGradient >
+    </GestureHandlerRootView >
   );
 }
 
@@ -845,8 +863,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   fullScreenContainer: {
-    flex: 1,
-    backgroundColor: 'transparent', // SHOW GRADIENT
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'transparent',
+    overflow: 'hidden', // Ensure children don't bleed
   },
   headerRow: {
     position: 'absolute',
