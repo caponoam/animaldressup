@@ -1,9 +1,9 @@
 import React, { useMemo } from 'react';
-import { View, Image, TouchableOpacity, StyleSheet, FlatList } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet, FlatList } from 'react-native';
 
 import { BASE_ANIMALS } from '../data/animals';
 
-export default function AnimalPicker({ selectedAnimal, onSelectAnimal }) {
+export default function AnimalPicker({ selectedAnimal, onSelectAnimal, unlockedAnimals = [], onUnlock }) {
 
     const ITEM_WIDTH = 140;
     const ITEM_GAP = 15;
@@ -11,20 +11,30 @@ export default function AnimalPicker({ selectedAnimal, onSelectAnimal }) {
 
     // Removed unused MULTIPLIER
 
-    const renderItem = ({ item }) => (
-        <TouchableOpacity
-            onPress={() => onSelectAnimal(item)}
-            style={[
-                styles.itemContainer,
-                selectedAnimal === item.source && styles.selectedItem
-            ]}
-            activeOpacity={0.7}
-        >
-            <View style={styles.cardInternal}>
-                <Image source={item.source} style={styles.image} />
-            </View>
-        </TouchableOpacity>
-    );
+    const renderItem = ({ item }) => {
+        const isLocked = item.locked && !unlockedAnimals?.includes(item.id);
+
+        return (
+            <TouchableOpacity
+                onPress={() => isLocked ? onUnlock(item) : onSelectAnimal(item)}
+                style={[
+                    styles.itemContainer,
+                    selectedAnimal === item.source && styles.selectedItem
+                ]}
+                activeOpacity={0.7}
+            >
+                <View style={styles.cardInternal}>
+                    <Image source={item.source} style={[styles.image, isLocked && { opacity: 0.5 }]} />
+                    {isLocked && (
+                        <View style={styles.lockOverlay}>
+                            <Text style={styles.lockIcon}>🔒</Text>
+                            <Text style={styles.costText}>{item.cost}</Text>
+                        </View>
+                    )}
+                </View>
+            </TouchableOpacity>
+        );
+    };
 
     return (
         <FlatList
@@ -81,5 +91,23 @@ const styles = StyleSheet.create({
         width: 110,
         height: 140,
         resizeMode: 'contain',
+    },
+    lockOverlay: {
+        position: 'absolute',
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0,0,0,0.3)',
+        borderRadius: 10,
+        padding: 5,
+    },
+    lockIcon: {
+        fontSize: 24,
+    },
+    costText: {
+        color: 'white',
+        fontWeight: 'bold',
+        fontSize: 14,
+        textShadowColor: 'black',
+        textShadowRadius: 2,
     },
 });

@@ -1,8 +1,25 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, Modal, StyleSheet } from 'react-native';
+import React, { useRef } from 'react';
+import { View, Text, TouchableOpacity, Modal, StyleSheet, Pressable } from 'react-native';
 import packageJson from '../package.json';
 
-export default function AboutModal({ visible, onClose }) {
+export default function AboutModal({ visible, onClose, onUnlockCreatorReward }) {
+    const timerRef = useRef(null);
+
+    const handlePressIn = () => {
+        timerRef.current = setTimeout(() => {
+            if (onUnlockCreatorReward) {
+                onUnlockCreatorReward();
+            }
+        }, 10000); // 10 seconds
+    };
+
+    const handlePressOut = () => {
+        if (timerRef.current) {
+            clearTimeout(timerRef.current);
+            timerRef.current = null;
+        }
+    };
+
     return (
         <Modal
             animationType="fade"
@@ -16,7 +33,15 @@ export default function AboutModal({ visible, onClose }) {
                     <Text style={styles.aboutVersion}>v{packageJson.version}</Text>
 
                     <Text style={styles.aboutSection}>Created by:</Text>
-                    <Text style={styles.aboutText}>Uma Wolf</Text>
+                    <Pressable
+                        onPressIn={handlePressIn}
+                        onPressOut={handlePressOut}
+                        style={({ pressed }) => [
+                            pressed && { opacity: 0.7 }
+                        ]}
+                    >
+                        <Text style={styles.aboutText}>Uma Wolf</Text>
+                    </Pressable>
 
                     <Text style={styles.aboutSection}>How to Play:</Text>
                     <View style={styles.instructionRow}>

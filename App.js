@@ -16,6 +16,7 @@ import DraggableAccessor from './components/DraggableAccessor';
 import SaveModal from './components/SaveModal';
 import AboutModal from './components/AboutModal';
 import SavedOutfitsList from './components/SavedOutfitsList';
+import GemsInfoModal from './components/GemsInfoModal';
 
 // DATA DEFINITIONS
 import { BASE_ANIMALS } from './data/animals';
@@ -42,9 +43,15 @@ export default function App() {
   const [isSaveModalVisible, setIsSaveModalVisible] = useState(false);
   const [trashLayout, setTrashLayout] = useState(null);
   const [isAboutVisible, setIsAboutVisible] = useState(false);
+  const [isGemsInfoVisible, setIsGemsInfoVisible] = useState(false);
+  const [unlockedAnimals, setUnlockedAnimals] = useState([]); // List of unlocked animal IDs
+  const [unlockedAccessories, setUnlockedAccessories] = useState([]); // List of unlocked accessory IDs
+  const [milestones, setMilestones] = useState([]); // earned_rewards tracking
 
   // EASTER EGG STATE 🥚
   const [eggCount, setEggCount] = useState(0);
+  const [sugarGliderTaps, setSugarGliderTaps] = useState(0); // Secret Stash Tracker 🐿️
+  const [gems, setGems] = useState(0); // Gems Currency 💎
   const [isAntiGravity, setIsAntiGravity] = useState(false); // ANIMATION SHARED VALUES
   const gravityOffset = useSharedValue(0);
 
@@ -54,6 +61,10 @@ export default function App() {
   // HARDWARE BACK BUTTON HANDLER
   useEffect(() => {
     const backAction = () => {
+      if (isGemsInfoVisible) {
+        setIsGemsInfoVisible(false);
+        return true;
+      }
       if (isAboutVisible) {
         setIsAboutVisible(false);
         return true;
@@ -77,6 +88,31 @@ export default function App() {
     const loadOutfits = async () => {
       try {
         const jsonValue = await AsyncStorage.getItem(STORAGE_KEY);
+
+        // Load Gems
+        const savedGems = await AsyncStorage.getItem('@dress_it_up_gems');
+        if (savedGems !== null) {
+          setGems(parseInt(savedGems, 10));
+        }
+
+        // Load Unlocked Animals
+        const savedUnlocked = await AsyncStorage.getItem('@dress_it_up_unlocked_animals');
+        if (savedUnlocked !== null) {
+          setUnlockedAnimals(JSON.parse(savedUnlocked));
+        }
+
+        // Load Unlocked Accessories
+        const savedUnlockedAccessories = await AsyncStorage.getItem('@dress_it_up_unlocked_accessories');
+        if (savedUnlockedAccessories !== null) {
+          setUnlockedAccessories(JSON.parse(savedUnlockedAccessories));
+        }
+
+        // Load Milestones
+        const savedMilestones = await AsyncStorage.getItem('@dress_it_up_milestones');
+        if (savedMilestones !== null) {
+          setMilestones(JSON.parse(savedMilestones));
+        }
+
         if (jsonValue != null) {
           const rawOutfits = JSON.parse(jsonValue);
 
@@ -137,12 +173,171 @@ export default function App() {
     }
   };
 
+  const saveGems = async (newGemCount) => {
+    try {
+      setGems(newGemCount);
+      await AsyncStorage.setItem('@dress_it_up_gems', newGemCount.toString());
+    } catch (e) {
+      console.error("Failed to save gems", e);
+    }
+  };
+
+
+
+  const handleUnlockAnimal = async (animal) => {
+    console.log('[App] Requesting unlock for:', animal.id);
+
+    // EASTER EGG: SUGAR GLIDER SECRET STASH 🐿️
+    if (animal.id === 'sugar_glider') {
+      const newTaps = sugarGliderTaps + 1;
+      setSugarGliderTaps(newTaps);
+
+      if (newTaps === 5) {
+        if (!milestones.includes('sugar_glider_stash')) {
+          // Grant Reward
+          const newMilestones = [...milestones, 'sugar_glider_stash'];
+          const newGems = gems + 10;
+
+          saveGems(newGems);
+          setMilestones(newMilestones);
+          AsyncStorage.setItem('@dress_it_up_milestones', JSON.stringify(newMilestones));
+
+          Alert.alert("🐿️ Secret Stash Found!", "You discovered the Sugar Glider's secret stash! (+20 Gems)");
+          return; // Don't show unlock prompt this time
+        }
+      }
+    }
+
+    if (gems >= animal.cost) {
+      Alert.alert(
+        "Unlock Animal?",
+        `Unlock ${animal.id.replace('_', ' ')} for ${animal.cost} gems?`,
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Unlock!",
+            onPress: () => {
+              const newGemCount = gems - animal.cost;
+              const newUnlocked = [...unlockedAnimals, animal.id];
+
+              saveGems(newGemCount);
+              setUnlockedAnimals(newUnlocked);
+              AsyncStorage.setItem('@dress_it_up_unlocked_animals', JSON.stringify(newUnlocked));
+
+              Alert.alert("Unlocked!", "You have a new friend! 🐾");
+            }
+          }
+        ]
+      );
+    } else {
+      Alert.alert("Not enough gems!", `You need ${animal.cost} gems to unlock this friend. Earn more by playing!`);
+    }
+  };
+
+  const handleUnlockAccessory = (item) => {
+    if (gems >= item.cost) {
+      Alert.alert(
+        "Unlock Accessory?",
+        `Unlock ${item.name} for ${item.cost} gems?`,
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Unlock!",
+            onPress: () => {
+              const newGemCount = gems - item.cost;
+              const newUnlocked = [...unlockedAccessories, item.id];
+
+              saveGems(newGemCount);
+              setUnlockedAccessories(newUnlocked);
+              AsyncStorage.setItem('@dress_it_up_unlocked_accessories', JSON.stringify(newUnlocked));
+              Alert.alert("Unlocked!", "New style added to your wardrobe!");
+            }
+          }
+        ]
+      );
+    } else {
+      Alert.alert("Not enough gems!", `You need ${item.cost} gems to unlock this item.`);
+    }
+  };
+
+  // REWARD: CREATOR (Uma Wolf 10s Hold)
+  const handleCreatorReward = () => {
+    if (!milestones.includes('creator_reward')) {
+      const newMilestones = [...milestones, 'creator_reward'];
+      const newGems = gems + 10;
+
+      saveGems(newGems);
+      setMilestones(newMilestones);
+      AsyncStorage.setItem('@dress_it_up_milestones', JSON.stringify(newMilestones));
+
+      Alert.alert("🐺 Awooo!", "You found the Creator's Gift! (+10 Gems)");
+    }
+  };
+
+  const checkAndAwardMilestones = (currentOutfits, currentGems) => {
+    let earnedGems = 0;
+    const newMilestones = [...milestones];
+    let milestonesChanged = false;
+
+    // REWARD: ZOO KEEPER (5 Saved Unique Animals)
+    if (!milestones.includes('zoo_keeper')) {
+      const uniqueAnimals = new Set(currentOutfits.map(o => o.animalId)).size; // Use animalId for uniqueness
+      if (uniqueAnimals >= 5) {
+        earnedGems += 5;
+        newMilestones.push('zoo_keeper');
+        milestonesChanged = true;
+        Alert.alert("Zoo Keeper Award! 🏆", "You've collected 5 different animals! (+5 Gems)");
+      }
+    }
+
+    if (milestonesChanged) {
+      const finalGems = currentGems + earnedGems;
+      saveGems(finalGems);
+      setMilestones(newMilestones);
+      AsyncStorage.setItem('@dress_it_up_milestones', JSON.stringify(newMilestones));
+    }
+  };
+
+  // REWARD: FASHIONISTA (5+ Items on current animal)
+  const checkFashionistaReward = (outfit) => {
+    if (milestones.includes('fashionista_' + selectedAnimalId)) return; // Use selectedAnimalId
+
+    let itemCount = 0;
+    Object.values(outfit).forEach(category => {
+      if (Array.isArray(category)) itemCount += category.length;
+    });
+
+    if (itemCount >= 5) {
+      // Award!
+      const newMilestones = [...milestones, 'fashionista_' + selectedAnimalId]; // Use selectedAnimalId
+      const newGems = gems + 1;
+
+      saveGems(newGems);
+      setMilestones(newMilestones);
+      AsyncStorage.setItem('@dress_it_up_milestones', JSON.stringify(newMilestones));
+      Alert.alert("Fashionista! ✨", "That's a lot of style! (+1 Gem)");
+    }
+  };
+
   const handleTitleTap = () => {
     const newCount = eggCount + 1;
     setEggCount(newCount);
     if (newCount === 7) {
       setIsAntiGravity(true);
-      Alert.alert("🪐 ZERO GRAVITY ACTIVATED", "Hold on to your hats!");
+
+      // REWARD: EASTER EGG (One-time only)
+      if (!milestones.includes('egg_antigravity')) {
+        saveGems(gems + 10);
+
+        const newMilestones = [...milestones, 'egg_antigravity'];
+        setMilestones(newMilestones);
+        AsyncStorage.setItem('@dress_it_up_milestones', JSON.stringify(newMilestones));
+
+        Alert.alert("🪐 ZERO GRAVITY ACTIVATED", "Hold on to your hats! (+10 Gems)");
+      } else {
+        Alert.alert("🪐 ZERO GRAVITY ACTIVATED", "Hold on to your hats!");
+      }
+
       gravityOffset.value = withRepeat(
         withSequence(
           withTiming(-30, { duration: 1500, easing: Easing.inOut(Easing.quad) }),
@@ -190,6 +385,11 @@ export default function App() {
     setHistory(nextHistory);
     // console.log('[App] history updated. New length:', nextHistory.length);
     setHistoryIndex(nextHistory.length - 1);
+
+    // Check Fashionista on every update
+    if (newOutfit) {
+      checkFashionistaReward(newOutfit);
+    }
   };
 
   const undo = () => {
@@ -220,10 +420,16 @@ export default function App() {
         throw new Error("Snapshot file was not created");
       }
 
-      await shareAsync(uri, { mimeType: 'image/png', dialogTitle: 'Share your look' });
-    } catch (e) {
-      console.error(e);
-      Alert.alert("Share Error", e.message || "Unknown error occurred");
+      await shareAsync(uri); // Simplified sharing call
+
+      // REWARD: SHARE (+1 Gem) 💎
+      const newGems = gems + 1;
+      saveGems(newGems);
+      Alert.alert("Shared! 📸", "Thanks for showing off your style! (+1 Gem)");
+
+    } catch (error) {
+      console.error("Snapshot failed", error);
+      Alert.alert("Error", "Could not take snapshot.");
     }
   };
 
@@ -443,6 +649,7 @@ export default function App() {
 
     setSavedOutfits(updatedList);
     saveOutfitsToStorage(updatedList);
+    checkAndAwardMilestones(updatedList, gems);
   };
 
   const handleLoadOutfit = (savedOutfit) => {
@@ -495,6 +702,15 @@ export default function App() {
               <Animated.Text style={[styles.title, floatStyle]}>Pick Your Pal!</Animated.Text>
             </TouchableOpacity>
 
+            {/* GEM COUNTER */}
+            <TouchableOpacity
+              style={styles.gemContainer}
+              onPress={() => setIsGemsInfoVisible(true)}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.gemText}>💎 {gems}</Text>
+            </TouchableOpacity>
+
 
 
             <View style={styles.previewContainer}>
@@ -512,6 +728,8 @@ export default function App() {
             <View style={{ height: 220 }}>
               <AnimalPicker
                 selectedAnimal={selectedAnimal}
+                unlockedAnimals={unlockedAnimals}
+                onUnlock={(animal) => handleUnlockAnimal(animal)}
                 onSelectAnimal={(animal) => {
                   console.log('[App] Resetting outfit for selected animal:', animal.id);
                   setHistory([{ outfit: { hat: [], glasses: [], jewelry: [], neckwear: [], top: [], bottoms: [], shoes: [] }, background: null }]);
@@ -598,6 +816,15 @@ export default function App() {
               </TouchableOpacity>
             </View>
 
+            {/* GEM COUNTER (Edit Mode) */}
+            <TouchableOpacity
+              style={styles.gemContainer}
+              onPress={() => setIsGemsInfoVisible(true)}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.gemText}>💎 {gems}</Text>
+            </TouchableOpacity>
+
             {/* DRAWER 1: BACKGROUNDS */}
             <SlidingDrawer
               title="Sights"
@@ -608,6 +835,8 @@ export default function App() {
               topOffset={100}
               color="#FF6B6B"
               zIndex={300}
+              unlockedAccessories={unlockedAccessories}
+              onUnlockAccessory={handleUnlockAccessory}
             />
 
             {/* DRAWER 2: HATS */}
@@ -620,6 +849,8 @@ export default function App() {
               topOffset={170}
               color="#4ECDC4"
               zIndex={200}
+              unlockedAccessories={unlockedAccessories}
+              onUnlockAccessory={handleUnlockAccessory}
             />
 
             {/* DRAWER 3: GLASSES */}
@@ -632,6 +863,8 @@ export default function App() {
               topOffset={240}
               color="#FFE66D"
               zIndex={100}
+              unlockedAccessories={unlockedAccessories}
+              onUnlockAccessory={handleUnlockAccessory}
             />
 
             {/* DRAWER 4: JEWELRY */}
@@ -644,6 +877,8 @@ export default function App() {
               topOffset={310}
               color="#A0D9B4"
               zIndex={90}
+              unlockedAccessories={unlockedAccessories}
+              onUnlockAccessory={handleUnlockAccessory}
             />
 
             {/* DRAWER 5: NECKWEAR (New) */}
@@ -656,6 +891,8 @@ export default function App() {
               topOffset={380}
               color="#FFCCBC"
               zIndex={85}
+              unlockedAccessories={unlockedAccessories}
+              onUnlockAccessory={handleUnlockAccessory}
             />
 
             {/* DRAWER 6: TOPS (Shifted Down) */}
@@ -669,6 +906,8 @@ export default function App() {
               color="#6A8EAE"
               zIndex={80}
               allowDrag={true}
+              unlockedAccessories={unlockedAccessories}
+              onUnlockAccessory={handleUnlockAccessory}
             />
 
             {/* DRAWER 7: SHOES (Shifted Up) */}
@@ -681,6 +920,8 @@ export default function App() {
               topOffset={520}
               color="#957DAD"
               zIndex={70}
+              unlockedAccessories={unlockedAccessories}
+              onUnlockAccessory={handleUnlockAccessory}
             />
 
             {/* Main Display Area - MAXIMIZED & DRAGGABLE */}
@@ -750,9 +991,17 @@ export default function App() {
         />
 
         {/* ABOUT MODAL */}
+        {/* ABOUT MODAL */}
         <AboutModal
           visible={isAboutVisible}
           onClose={() => setIsAboutVisible(false)}
+          onUnlockCreatorReward={handleCreatorReward}
+        />
+
+        {/* GEMS INFO MODAL */}
+        <GemsInfoModal
+          visible={isGemsInfoVisible}
+          onClose={() => setIsGemsInfoVisible(false)}
         />
 
       </LinearGradient >
@@ -767,6 +1016,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     alignItems: 'center',
     paddingVertical: 60,
+    paddingTop: 90, // Reduced from 120 so title isn't too low
     paddingBottom: 40,
   },
   title: {
@@ -802,6 +1052,25 @@ const styles = StyleSheet.create({
     elevation: 20,
     borderWidth: 8,
     borderColor: 'rgba(255,255,255,0.8)',
+  },
+  gemContainer: {
+    position: 'absolute',
+    top: 50,
+    right: 20,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    borderRadius: 20,
+    paddingHorizontal: 12, // Tightened
+    paddingVertical: 6,   // Tightened
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.5)',
+  },
+  gemText: {
+    fontSize: 18, // Slightly smaller
+    fontWeight: 'bold',
+    color: '#FFD700', // Gold color
+    textShadowColor: 'rgba(0,0,0,0.5)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
   },
   previewImage: {
     width: 200,
@@ -872,7 +1141,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 50, // Safe Area
     left: 20,
-    right: 90, // Avoid overlapping Drawer Tabs (60px + padding)
+    right: 150, // Avoid overlapping Drawer Tabs AND Gem Counter
     flexDirection: 'row',
     justifyContent: 'space-between',
     zIndex: 1000,

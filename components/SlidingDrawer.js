@@ -8,14 +8,16 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 const ITEM_HEIGHT_ESTIMATE = 95; // Approx height of item + gap
 
-function DraggableDrawerItem({ item, active, color, onSelect, allowDrag, scrollY, index, drawerHeight }) {
+function DraggableDrawerItem({ item, active, color, onSelect, allowDrag, scrollY, index, drawerHeight, unlockedAccessories = [], onUnlockAccessory }) {
     const translateX = useSharedValue(0);
     const translateY = useSharedValue(0);
     const isDragging = useSharedValue(false);
 
+    const isLocked = item.locked && !unlockedAccessories?.includes(item.id);
+
     // Pan Gesture for dragging
     const panGesture = Gesture.Pan()
-        .enabled(allowDrag)
+        .enabled(allowDrag && !isLocked)
         .activeOffsetX([-10, 10])
         .onStart(() => {
             isDragging.value = true;
@@ -72,11 +74,19 @@ function DraggableDrawerItem({ item, active, color, onSelect, allowDrag, scrollY
                         styles.thumbnailContainer,
                         active && { borderColor: color, backgroundColor: 'rgba(255,255,255,0.8)' }
                     ]}
-                    onPress={() => onSelect(item)}
+                    onPress={() => isLocked ? onUnlockAccessory(item) : onSelect(item)}
                     activeOpacity={0.8}
                 >
                     {item.source ? (
-                        <Image source={item.source} style={styles.thumbnail} />
+                        <View>
+                            <Image source={item.source} style={[styles.thumbnail, isLocked && { opacity: 0.5 }]} />
+                            {isLocked && (
+                                <View style={styles.lockOverlay}>
+                                    <Text style={styles.lockIcon}>🔒</Text>
+                                    <Text style={styles.costText}>{item.cost}</Text>
+                                </View>
+                            )}
+                        </View>
                     ) : (
                         <View style={[styles.thumbnail, styles.nonePlaceholder]}><Text style={styles.noneText}>🚫</Text></View>
                     )}
@@ -98,7 +108,9 @@ export default function SlidingDrawer({
     checkSelected,
     color = '#FF6B6B',
     zIndex = 100,
-    allowDrag = true // Default true
+    allowDrag = true, // Default true
+    unlockedAccessories = [],
+    onUnlockAccessory
 }) {
     const [isOpen, setIsOpen] = useState(false);
     const slideAnim = useRef(new Animated.Value(DRAWER_WIDTH)).current;
@@ -172,6 +184,8 @@ export default function SlidingDrawer({
                                 scrollY={scrollY}
                                 index={index}
                                 drawerHeight={MAX_DRAWER_HEIGHT - 40}
+                                unlockedAccessories={unlockedAccessories}
+                                onUnlockAccessory={onUnlockAccessory}
                             />
                         ))}
                     </View>
@@ -292,5 +306,26 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: '#999',
         fontWeight: 'bold',
+    },
+    lockOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0,0,0,0.3)',
+        borderRadius: 8,
+    },
+    lockIcon: {
+        fontSize: 20,
+    },
+    costText: {
+        color: 'white',
+        fontWeight: 'bold',
+        fontSize: 10,
+        textShadowColor: 'black',
+        textShadowRadius: 2,
     },
 });

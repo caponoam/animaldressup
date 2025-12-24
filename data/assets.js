@@ -5,8 +5,8 @@ export const backgrounds = [
     { id: 'space', source: require('../assets/backgrounds/space.png'), name: 'Space' },
     { id: 'supermarket', source: require('../assets/backgrounds/supermarket.png'), name: 'Supermarket' },
     { id: 'basketball_court', source: require('../assets/backgrounds/basketball_court.png'), name: 'Court' },
-    { id: 'beach', source: require('../assets/backgrounds/beach.png'), name: 'Beach' },
-    { id: 'rainforest', source: require('../assets/backgrounds/rainforest.png'), name: 'Rainforest' },
+    { id: 'beach', source: require('../assets/backgrounds/beach.png'), name: 'Beach', locked: true, cost: 2 },
+    { id: 'rainforest', source: require('../assets/backgrounds/rainforest.png'), name: 'Rainforest', locked: true, cost: 2 },
     { id: 'none', source: null, name: 'None' },
 ];
 
@@ -16,13 +16,15 @@ export const hats = [
     { id: 'winter_beanie', type: 'hat', source: require('../assets/clothes/hats/winter_beanie.png'), name: 'Beanie' },
     { id: 'cowboy_hat', type: 'hat', source: require('../assets/clothes/hats/cowboy_hat.png'), name: 'Cowboy' },
     { id: 'top_hat', type: 'hat', source: require('../assets/clothes/hats/top_hat.png'), name: 'Top Hat' },
-    { id: 'monopoly_hat', type: 'hat', source: require('../assets/clothes/hats/monopoly_hat.png'), name: 'Monopoly' },
+    { id: 'monopoly_hat', type: 'hat', source: require('../assets/clothes/hats/monopoly_hat.png'), name: 'Monopoly', locked: true, cost: 2 },
+    { id: 'kings_crown', type: 'hat', source: require('../assets/clothes/hats/kings_crown.png'), name: 'Crown', locked: true, cost: 2 },
 ];
 
 export const glasses = [
     { id: 'black_glasses', type: 'glasses', source: require('../assets/clothes/glasses/black_glasses.png'), name: 'Sunglasses' },
     { id: 'seeing_glasses', type: 'glasses', source: require('../assets/clothes/glasses/seeing_glasses.png'), name: 'Seeing Glasses' },
     { id: 'fancy_glasses', type: 'glasses', source: require('../assets/clothes/glasses/fancy_glasses.png'), name: 'Fancy Glasses' },
+    { id: 'wrap_around_glasses', type: 'glasses', source: require('../assets/clothes/glasses/wrap_around_glasses.png'), name: 'Wrap Around', locked: true, cost: 2 },
 ];
 
 export const jewelry = [
@@ -30,15 +32,16 @@ export const jewelry = [
     { id: 'hoop_earrings', type: 'jewelry', source: require('../assets/clothes/jewelry/hoop_earrings.png'), name: 'Hoops' },
     { id: 'heart_necklace', type: 'jewelry', source: require('../assets/clothes/jewelry/heart_necklace.png'), name: 'Necklace' },
     { id: 'gold_watch', type: 'jewelry', source: require('../assets/clothes/jewelry/gold_watch.png'), name: 'Watch' },
-    { id: 'gold_chain', type: 'jewelry', source: require('../assets/clothes/jewelry/gold_chain.png'), name: 'Gold Chain' },
     { id: 'diamond_stud', type: 'jewelry', source: require('../assets/clothes/jewelry/diamond_stud.png'), name: 'Diamond Stud' },
+    { id: 'gold_chain', type: 'jewelry', source: require('../assets/clothes/jewelry/gold_chain.png'), name: 'Gold Chain', locked: true, cost: 2 },
+    { id: 'kings_scepter', type: 'jewelry', source: require('../assets/clothes/jewelry/kings_scepter.png'), name: 'Scepter', locked: true, cost: 2 },
 ];
 
 export const neckwear = [
     { id: 'scarf', type: 'neckwear', source: require('../assets/clothes/neckwear/scarf.png'), name: 'Scarf' },
     { id: 'bow_tie', type: 'neckwear', source: require('../assets/clothes/neckwear/bow_tie.png'), name: 'Bow Tie' },
     { id: 'blue_bandana', type: 'neckwear', source: require('../assets/clothes/neckwear/blue_bandana.png'), name: 'Blue Bandana' },
-    { id: 'spiked_collar', type: 'neckwear', source: require('../assets/clothes/neckwear/spiked_collar.png'), name: 'Spiked Collar' },
+    { id: 'spiked_collar', type: 'neckwear', source: require('../assets/clothes/neckwear/spiked_collar.png'), name: 'Spiked Collar', locked: true, cost: 2 },
 ];
 
 export const tops = [
@@ -55,7 +58,7 @@ export const bottoms = [
 export const shoes = [
     { id: 'red_sneaker', type: 'shoes', source: require('../assets/clothes/shoes/red_sneaker.png'), name: 'Red Sneaker' },
     { id: 'flip_flop', type: 'shoes', source: require('../assets/clothes/shoes/flip_flop.png'), name: 'Flip Flop' },
-    { id: 'dress_shoe', type: 'shoes', source: require('../assets/clothes/shoes/dress_shoe.png'), name: 'Dress Shoe' },
+    { id: 'dress_shoe', type: 'shoes', source: require('../assets/clothes/shoes/dress_shoe.png'), name: 'Dress Shoe', locked: true, cost: 2 },
     { id: 'boot', type: 'shoes', source: require('../assets/clothes/shoes/boot.png'), name: 'Boot' },
 ];
 
