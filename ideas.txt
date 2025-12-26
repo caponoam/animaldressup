@@ -1,12 +1,10 @@
-Fix trash issue/hot spot
+[Bug] Gem jar dissapears on edit page sometimes.
 
 Fit the accessories, clothes, etc better to the animal better    
 apply clothes and accessories to the animal properly 
 
 Drawers can't hide each other
 
-Gems (in app currency)
-Gem "jar"
 
 Poses chooser
 
@@ -41,8 +39,14 @@ nicer looking buttons
 
 [Storage] Save edits for future use/edit (prompt for name of edit, save to file)
 
+Fix trash issue/hot spot
 
-PROMPTS
+Gems (in app currency)
+Gem "jar"
+
+********************************************************************************
+==================================== PROMPTS =================================
+********************************************************************************
 
 Animal:
 A cute, cartoon-style sloth standing up on two legs, facing forward suitable for a paper-doll style dress up game.
