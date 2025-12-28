@@ -1,4 +1,3 @@
-[Bug] Gem jar dissapears on edit page sometimes.
 
 New animals: Panda, leemmur
 New accessories: tiara, ballet shoes
@@ -46,6 +45,8 @@ Fix trash issue/hot spot
 
 Gems (in app currency)
 Gem "jar"
+[Bug] Gem jar dissapears on edit page sometimes.
+
 
 ********************************************************************************
 ==================================== PROMPTS =================================

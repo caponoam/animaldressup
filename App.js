@@ -183,12 +183,9 @@ export default function App() {
   };
 
 
-
-  const handleUnlockAnimal = async (animal) => {
-    console.log('[App] Requesting unlock for:', animal.id);
-
-    // EASTER EGG: SUGAR GLIDER SECRET STASH 🐿️
-    if (animal.id === 'sugar_glider') {
+  // Helper for Sugar Glider Easter Egg
+  const checkSugarGliderTap = (animalId) => {
+    if (animalId === 'sugar_glider') {
       const newTaps = sugarGliderTaps + 1;
       setSugarGliderTaps(newTaps);
 
@@ -203,10 +200,19 @@ export default function App() {
           AsyncStorage.setItem('@dress_it_up_milestones', JSON.stringify(newMilestones));
 
           Alert.alert("🐿️ Secret Stash Found!", "You discovered the Sugar Glider's secret stash! (+20 Gems)");
-          return; // Don't show unlock prompt this time
+          return true; // Triggered
         }
       }
     }
+    return false;
+  };
+
+
+  const handleUnlockAnimal = async (animal) => {
+    console.log('[App] Requesting unlock for:', animal.id);
+
+    // EASTER EGG: SUGAR GLIDER SECRET STASH 🐿️
+    if (checkSugarGliderTap(animal.id)) return;
 
     if (gems >= animal.cost) {
       Alert.alert(
@@ -731,6 +737,7 @@ export default function App() {
                 unlockedAnimals={unlockedAnimals}
                 onUnlock={(animal) => handleUnlockAnimal(animal)}
                 onSelectAnimal={(animal) => {
+                  checkSugarGliderTap(animal.id);
                   console.log('[App] Resetting outfit for selected animal:', animal.id);
                   setHistory([{ outfit: { hat: [], glasses: [], jewelry: [], neckwear: [], top: [], bottoms: [], shoes: [] }, background: null }]);
                   setHistoryIndex(0);

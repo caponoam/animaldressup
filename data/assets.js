@@ -60,6 +60,7 @@ export const shoes = [
     { id: 'flip_flop', type: 'shoes', source: require('../assets/clothes/shoes/flip_flop.png'), name: 'Flip Flop' },
     { id: 'dress_shoe', type: 'shoes', source: require('../assets/clothes/shoes/dress_shoe.png'), name: 'Dress Shoe', locked: true, cost: 2 },
     { id: 'boot', type: 'shoes', source: require('../assets/clothes/shoes/boot.png'), name: 'Boot' },
+    { id: 'ballet_shoe', type: 'shoes', source: require('../assets/clothes/shoes/ballet-shoe.png'), name: 'Ballet Shoe', locked: true, cost: 5 },
 ];
 
 export const SHIRT_BASE_WIDTH = 240;
@@ -121,6 +122,11 @@ export const ANIMAL_FITS = {
         hat: { y: -130, scale: 0.4 },
         glasses: { y: -50, scale: 0.4 },
     },
+    lemur: {
+        torso: { width: 150, height: 180, y: 110 },
+        hat: { y: -140, scale: 0.45 },
+        glasses: { y: -55, scale: 0.4 },
+    },
 };
 
 export const COMPOSITES = {
@@ -162,5 +168,9 @@ export const COMPOSITES = {
     'sugar_glider_red_shirt': require('../assets/clothes/tops/sugar_glider_red_shirt_composite.png'),
     'sugar_glider_hawaiian_shirt': require('../assets/clothes/tops/sugar_glider_hawaiian_shirt_composite.png'),
     'sugar_glider_dress_shirt': require('../assets/clothes/tops/sugar_glider_dress_shirt_composite.png'),
+
+    'lemur_red_shirt': require('../assets/clothes/tops/lemur_red_shirt_composite.png'),
+    'lemur_hawaiian_shirt': require('../assets/clothes/tops/lemur_hawaiian_shirt_composite.png'),
+    'lemur_dress_shirt': require('../assets/clothes/tops/lemur_dress_shirt_composite.png'),
 
 };
