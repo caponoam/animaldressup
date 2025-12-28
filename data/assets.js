@@ -35,6 +35,7 @@ export const jewelry = [
     { id: 'diamond_stud', type: 'jewelry', source: require('../assets/clothes/jewelry/diamond_stud.png'), name: 'Diamond Stud' },
     { id: 'gold_chain', type: 'jewelry', source: require('../assets/clothes/jewelry/gold_chain.png'), name: 'Gold Chain', locked: true, cost: 2 },
     { id: 'kings_scepter', type: 'jewelry', source: require('../assets/clothes/jewelry/kings_scepter.png'), name: 'Scepter', locked: true, cost: 2 },
+    { id: 'tiara', type: 'jewelry', source: require('../assets/clothes/jewelry/tiara.png'), name: 'Tiara', locked: true, cost: 5 },
 ];
 
 export const neckwear = [
