@@ -1,5 +1,8 @@
 [Bug] Gem jar dissapears on edit page sometimes.
 
+New animals: Panda, leemmur
+New accessories: tiara, ballet shoes
+
 Fit the accessories, clothes, etc better to the animal better    
 apply clothes and accessories to the animal properly 
 

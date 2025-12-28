@@ -1058,14 +1058,15 @@ const styles = StyleSheet.create({
     top: 50,
     right: 20,
     backgroundColor: 'rgba(0,0,0,0.3)',
-    borderRadius: 20,
-    paddingHorizontal: 12, // Tightened
-    paddingVertical: 6,   // Tightened
-    borderWidth: 2,
+    borderRadius: 16, // slightly smaller radius
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderWidth: 1.5,
     borderColor: 'rgba(255,255,255,0.5)',
+    zIndex: 1001,
   },
   gemText: {
-    fontSize: 18, // Slightly smaller
+    fontSize: 14,
     fontWeight: 'bold',
     color: '#FFD700', // Gold color
     textShadowColor: 'rgba(0,0,0,0.5)',
