@@ -1,6 +1,7 @@
+[bug] gem jar on RTL goes left instead of right
 
-New animals: Panda, leemmur
-New accessories: tiara, ballet shoes
+New animals: Panda
+New accessories: 
 
 Fit the accessories, clothes, etc better to the animal better    
 apply clothes and accessories to the animal properly 
@@ -47,20 +48,23 @@ Gems (in app currency)
 Gem "jar"
 [Bug] Gem jar dissapears on edit page sometimes.
 
+New animals: leemmur
+New accessories: tiara, ballet shoes
+
 
 ********************************************************************************
 ==================================== PROMPTS =================================
 ********************************************************************************
 
 Animal:
-A cute, cartoon-style sloth standing up on two legs, facing forward suitable for a paper-doll style dress up game.
+A cute, cartoon-style [ANIMAL] standing up on two legs, facing forward suitable for a paper-doll style dress up game.
 It should have a friendly expression. The style should match existing flat 2D vector art. 
 Simple shapes, clean lines. No background (transparent).
 
 Composite:
-Combine these two images into a single composite image. The bear should be wearing the hawaiian shirt. 
-The shirt should fit naturally on the bear's torso. Maintain the exact art style, resolution, and flat vector aesthetic. 
-The output should be the bear dressed in the shirt on a transparent background.
+Combine these two images into a single composite image. The [ANIMAL] should be wearing the hawaiian shirt. 
+The shirt should fit naturally on the [ANIMAL]'s torso. Maintain the exact art style, resolution, and flat vector aesthetic. 
+The output should be the [ANIMAL] dressed in the shirt on a transparent background.
 
 Accessories:
 A gold chain, isolated on a transparent background, cartoon style, flat vector art, 

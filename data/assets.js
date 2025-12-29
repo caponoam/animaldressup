@@ -128,6 +128,11 @@ export const ANIMAL_FITS = {
         hat: { y: -140, scale: 0.45 },
         glasses: { y: -55, scale: 0.4 },
     },
+    axolotl: {
+        torso: { width: 140, height: 120, y: 100 },
+        hat: { y: -140, scale: 0.35 },
+        glasses: { y: -40, scale: 0.35 },
+    },
 };
 
 export const COMPOSITES = {
@@ -173,5 +178,9 @@ export const COMPOSITES = {
     'lemur_red_shirt': require('../assets/clothes/tops/lemur_red_shirt_composite.png'),
     'lemur_hawaiian_shirt': require('../assets/clothes/tops/lemur_hawaiian_shirt_composite.png'),
     'lemur_dress_shirt': require('../assets/clothes/tops/lemur_dress_shirt_composite.png'),
+
+    'axolotl_red_shirt': require('../assets/clothes/tops/axolotl_red_shirt_composite.png'),
+    'axolotl_hawaiian_shirt': require('../assets/clothes/tops/axolotl_hawaiian_shirt_composite.png'),
+    'axolotl_dress_shirt': require('../assets/clothes/tops/axolotl_dress_shirt_composite.png'),
 
 };

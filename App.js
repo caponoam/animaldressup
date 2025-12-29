@@ -1,6 +1,6 @@
 
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Image, TouchableOpacity, ScrollView, Alert, Dimensions, Modal, BackHandler, useWindowDimensions } from 'react-native';
+import { StyleSheet, Text, View, Image, TouchableOpacity, ScrollView, Alert, Dimensions, Modal, BackHandler, useWindowDimensions, I18nManager } from 'react-native';
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { GestureHandlerRootView, GestureDetector, Gesture } from 'react-native-gesture-handler';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, withTiming, withRepeat, withSequence, Easing } from 'react-native-reanimated';
@@ -1063,7 +1063,8 @@ const styles = StyleSheet.create({
   gemContainer: {
     position: 'absolute',
     top: 50,
-    right: 20,
+    right: I18nManager.isRTL ? undefined : 20,
+    left: I18nManager.isRTL ? 20 : undefined,
     backgroundColor: 'rgba(0,0,0,0.3)',
     borderRadius: 16, // slightly smaller radius
     paddingHorizontal: 8,
