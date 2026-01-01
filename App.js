@@ -711,6 +711,14 @@ export default function App() {
   const isCompositeAvailable = !!COMPOSITES[compositeKey];
   const renderedAnimalSource = isCompositeAvailable ? COMPOSITES[compositeKey] : selectedAnimal;
 
+  // console.log('[App] Composite Debug:', {
+  //   hasTop: !!currentTopForComposite,
+  //   topId: topIdForComposite,
+  //   compositeKey,
+  //   available: isCompositeAvailable,
+  //   animalSource: selectedAnimal === renderedAnimalSource ? 'Base' : 'Composite'
+  // });
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <LinearGradient

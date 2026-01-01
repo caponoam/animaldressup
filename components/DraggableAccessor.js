@@ -29,7 +29,7 @@ export default function DraggableAccessor({ source, initialX, initialY, initialS
     }, [initialX, initialY, initialScaleX, initialScaleY, initialRotation]);
 
     useEffect(() => {
-        console.log('[DraggableAccessor] Mounted', { source, initialX, initialY });
+        // console.log('[DraggableAccessor] Mounted source:', source, 'at', initialX, initialY);
     }, []);
 
     const trashHeight = useSharedValue(0);
@@ -92,7 +92,6 @@ export default function DraggableAccessor({ source, initialX, initialY, initialS
             }
         });
 
-    // ... (Pinch and Rotation gestures similar, usually don't need trash check on update but let's leave them pure) ...
     // Pinch Gesture
     const pinchGesture = Gesture.Pinch()
         .onStart(() => {
@@ -108,7 +107,7 @@ export default function DraggableAccessor({ source, initialX, initialY, initialS
             scaleX.value = context.value.scaleX * event.scale;
             scaleY.value = context.value.scaleY * event.scale;
         })
-        .onEnd(() => { // Keep standard end
+        .onEnd(() => {
             if (onDragEnd) runOnJS(onDragEnd)({ x: translateX.value, y: translateY.value, scaleX: scaleX.value, scaleY: scaleY.value, rotation: rotation.value });
         });
 
@@ -126,7 +125,7 @@ export default function DraggableAccessor({ source, initialX, initialY, initialS
         .onUpdate((event) => {
             rotation.value = context.value.rotation + event.rotation;
         })
-        .onEnd(() => { // Keep standard end
+        .onEnd(() => {
             if (onDragEnd) runOnJS(onDragEnd)({ x: translateX.value, y: translateY.value, scaleX: scaleX.value, scaleY: scaleY.value, rotation: rotation.value });
         });
 
