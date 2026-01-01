@@ -2,8 +2,8 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, Image, TouchableOpacity, ScrollView, Alert, Dimensions, Modal, BackHandler, useWindowDimensions, I18nManager } from 'react-native';
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { GestureHandlerRootView, GestureDetector, Gesture } from 'react-native-gesture-handler';
-import Animated, { useSharedValue, useAnimatedStyle, withSpring, withTiming, withRepeat, withSequence, Easing } from 'react-native-reanimated';
+import { GestureHandlerRootView, GestureDetector, Gesture, Directions } from 'react-native-gesture-handler';
+import Animated, { useSharedValue, useAnimatedStyle, withSpring, withTiming, withRepeat, withSequence, Easing, runOnJS } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { shareAsync } from 'expo-sharing';
 import { captureRef } from 'react-native-view-shot';
@@ -51,6 +51,7 @@ export default function App() {
   // EASTER EGG STATE 🥚
   const [eggCount, setEggCount] = useState(0);
   const [sugarGliderTaps, setSugarGliderTaps] = useState(0); // Secret Stash Tracker 🐿️
+  const [petCount, setPetCount] = useState(0); // Petting Tracker 🐾
   const [gems, setGems] = useState(0); // Gems Currency 💎
   const [isAntiGravity, setIsAntiGravity] = useState(false); // ANIMATION SHARED VALUES
   const gravityOffset = useSharedValue(0);
@@ -205,6 +206,26 @@ export default function App() {
       }
     }
     return false;
+  };
+
+  const handlePetAnimal = () => {
+    const newCount = petCount + 1;
+    setPetCount(newCount);
+
+    if (newCount === 7) {
+      if (!milestones.includes('pet_lover')) {
+        const newMilestones = [...milestones, 'pet_lover'];
+        const newGems = gems + 10;
+
+        saveGems(newGems);
+        setMilestones(newMilestones);
+        AsyncStorage.setItem('@dress_it_up_milestones', JSON.stringify(newMilestones));
+
+        Alert.alert("🐾 Pet Lover!", "You gave your friend some love! (+10 Gems)");
+      }
+      // Reset after triggering (or if already triggered, just reset cycle)
+      setPetCount(0);
+    }
   };
 
 
@@ -546,6 +567,10 @@ export default function App() {
   const animalY = useSharedValue(0);
   const animalStartContext = useSharedValue({ x: 0, y: 0 });
 
+  const handleBackPress = () => {
+    setCurrentScreen('selection');
+  };
+
   const animalDragGesture = Gesture.Pan()
     .onStart(() => {
       animalStartContext.value = { x: animalX.value, y: animalY.value };
@@ -675,10 +700,6 @@ export default function App() {
     }
   };
 
-  const handleBackPress = () => {
-    setCurrentScreen('selection');
-  };
-
   const isSelected = (type, source) => {
     return currentOutfit[type]?.some(item => item.source === source);
   }
@@ -721,9 +742,11 @@ export default function App() {
 
             <View style={styles.previewContainer}>
               {selectedAnimal ? (
-                <Animated.View style={[styles.cardGlow, floatStyle]}>
-                  <Image source={selectedAnimal} style={styles.previewImage} />
-                </Animated.View>
+                <TouchableOpacity onPress={handlePetAnimal} activeOpacity={0.9}>
+                  <Animated.View style={[styles.cardGlow, floatStyle]}>
+                    <Image source={selectedAnimal} style={styles.previewImage} />
+                  </Animated.View>
+                </TouchableOpacity>
               ) : (
                 <View style={styles.placeholderBox}>
                   <Text style={styles.placeholderText}>?</Text>
@@ -917,14 +940,28 @@ export default function App() {
               onUnlockAccessory={handleUnlockAccessory}
             />
 
-            {/* DRAWER 7: SHOES (Shifted Up) */}
+            {/* DRAWER 7: BOTTOMS (New) */}
+            <SlidingDrawer
+              title="Bottoms"
+              data={bottoms}
+              onSelect={(item, dropCoords) => toggleAccessory(item.type, item.source, item.id, dropCoords)}
+              checkSelected={(item) => isSelected(item.type, item.source)}
+              tabIcon="🩳"
+              topOffset={520}
+              color="#B39CD0" // Lavender
+              zIndex={75}
+              unlockedAccessories={unlockedAccessories}
+              onUnlockAccessory={handleUnlockAccessory}
+            />
+
+            {/* DRAWER 8: SHOES (Shifted Up) */}
             <SlidingDrawer
               title="Shoes"
               data={shoes}
               onSelect={(item, dropCoords) => toggleAccessory(item.type, item.source, item.id, dropCoords)}
               checkSelected={(item) => isSelected(item.type, item.source)}
               tabIcon="👟"
-              topOffset={520}
+              topOffset={590}
               color="#957DAD"
               zIndex={70}
               unlockedAccessories={unlockedAccessories}
@@ -976,7 +1013,8 @@ export default function App() {
               </GestureDetector>
             </View>
 
-            {/* ABOUT BUTTON (Moved to Edit Screen) */}
+
+            {/* ABOUT BUTTON */}
             <TouchableOpacity
               style={styles.aboutButton}
               onPress={() => setIsAboutVisible(true)}
@@ -1150,21 +1188,20 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 50, // Safe Area
     left: 20,
-    right: 150, // Avoid overlapping Drawer Tabs AND Gem Counter
+    right: 130, // Give a bit more space (was 150)
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-start', // Pack to left
     zIndex: 1000,
-    // Add gap to space buttons out
-    gap: 10,
+    gap: 8, // Tighter gap
   },
   nintendoButton: {
-    width: 50,
-    height: 50,
+    width: 45, // Tightened from 50
+    height: 45, // Tightened from 50
     borderRadius: 25,
     backgroundColor: 'white',
     justifyContent: 'center',
     alignItems: 'center',
-    borderBottomWidth: 4,
+    borderBottomWidth: 3, // Reduced from 4
     borderColor: '#ddd',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -1178,7 +1215,7 @@ const styles = StyleSheet.create({
     borderColor: '#bdbdbd',
   },
   nintendoText: {
-    fontSize: 28,
+    fontSize: 20, // Reduced from 28
     fontWeight: 'bold',
     color: 'white',
     textShadowColor: 'rgba(0,0,0,0.3)',
@@ -1216,10 +1253,35 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  aboutButton: {
+  floatingBackButton: {
     position: 'absolute',
     bottom: 40,
     left: 30,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#FF5E5E', // Red
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: 'white',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 8,
+    zIndex: 100,
+  },
+  floatingBackText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: 'white',
+    // Removed marginBottom as it likely isn't needed with matching font sizes
+  },
+  aboutButton: {
+    position: 'absolute',
+    bottom: 40,
+    left: 30, // Reset to original position
     width: 40,
     height: 40,
     borderRadius: 20,
