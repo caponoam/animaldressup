@@ -53,15 +53,15 @@ export const tops = [
 
 export const bottoms = [
     { id: 'kilt', type: 'bottoms', source: require('../assets/clothes/bottoms/kilt.png'), name: 'Kilt' },
-    { id: 'tutu_pink', type: 'bottoms', source: require('../assets/clothes/bottoms/tutu.png'), name: 'Tutu' },
-    { id: 'hawaiian_yahenda', type: 'bottoms', source: require('../assets/clothes/bottoms/hawaiian_yahenda.png'), name: 'Yahenda' },
+    { id: 'tutu_pink', type: 'bottoms', source: require('../assets/clothes/bottoms/tutu.png'), name: 'Tutu', cost: 1 },
+    { id: 'hawaiian_yahenda', type: 'bottoms', source: require('../assets/clothes/bottoms/hawaiian_yahenda.png'), name: 'Yahenda', cost: 2 },
 ];
 
 export const shoes = [
     { id: 'red_sneaker', type: 'shoes', source: require('../assets/clothes/shoes/red_sneaker.png'), name: 'Red Sneaker' },
     { id: 'flip_flop', type: 'shoes', source: require('../assets/clothes/shoes/flip_flop.png'), name: 'Flip Flop' },
-    { id: 'dress_shoe', type: 'shoes', source: require('../assets/clothes/shoes/dress_shoe.png'), name: 'Dress Shoe', locked: true, cost: 2 },
     { id: 'boot', type: 'shoes', source: require('../assets/clothes/shoes/boot.png'), name: 'Boot' },
+    { id: 'dress_shoe', type: 'shoes', source: require('../assets/clothes/shoes/dress_shoe.png'), name: 'Dress Shoe', locked: true, cost: 2 },
     { id: 'ballet_shoe', type: 'shoes', source: require('../assets/clothes/shoes/ballet-shoe.png'), name: 'Ballet Shoe', locked: true, cost: 5 },
 ];
 
