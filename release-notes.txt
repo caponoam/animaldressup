@@ -1,11 +1,13 @@
-Dress It Up! v1.2.0 Release Notes
+Dress It Up! v1.8.0 Release Notes
 
-We've polished up the wardrobe! 🐻✨
+Fabulous New Finds! 👗🌺🏴󠁧󠁢󠁳󠁣󠁴󠁿
 
 What's New:
-- 🌍 Better RTL Support: We've fixed layout issues for Right-to-Left languages. Menus and buttons now appear exactly where they should!
-- ⚡ Faster Loading: The animal picker is now optimized for speed, masking scrolling smoother on all devices.
-- 📱 Tablet Ready: Validated and optimized for tablet screens.
-- 🐛 Bug Squashing: Fixed minor visual glitches.
+- 🏴󠁧󠁢󠁳󠁣󠁴󠁿 New Bottoms: Added a Traditional Kilt!
+- 🩰 Dance Ready: Added a Pink Tutu and new Ballet Shoes.
+- 🌺 Island Vibes: Added the "Yahenda" Hawaiian sarong.
+- 🕶️ Style Fixes: Fixed an issue where Flip Flops and Dress Shoes were shy and wouldn't appear. They are now confident and ready to wear!
+- ⚡ Performance Boost: Major optimization to asset memory, making the app faster and more stable on all devices.
+- 🐾 Secret Surprise: Can you find the new "Pet the Animal" hidden feature? (Hint: They love attention!)
 
 Enjoying the update? Rate us!
