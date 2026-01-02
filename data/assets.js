@@ -53,8 +53,8 @@ export const tops = [
 
 export const bottoms = [
     { id: 'kilt', type: 'bottoms', source: require('../assets/clothes/bottoms/kilt.png'), name: 'Kilt' },
-    { id: 'tutu_pink', type: 'bottoms', source: require('../assets/clothes/bottoms/tutu.png'), name: 'Tutu', cost: 1 },
-    { id: 'hawaiian_yahenda', type: 'bottoms', source: require('../assets/clothes/bottoms/hawaiian_yahenda.png'), name: 'Yahenda', cost: 2 },
+    { id: 'tutu_pink', type: 'bottoms', source: require('../assets/clothes/bottoms/tutu.png'), name: 'Tutu', locked: true, cost: 1 },
+    { id: 'hawaiian_yahenda', type: 'bottoms', source: require('../assets/clothes/bottoms/hawaiian_yahenda.png'), name: 'Yahenda', locked: true, cost: 2 },
 ];
 
 export const shoes = [
