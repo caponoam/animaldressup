@@ -54,7 +54,8 @@ export const tops = [
 export const bottoms = [
     { id: 'kilt', type: 'bottoms', source: require('../assets/clothes/bottoms/kilt.png'), name: 'Kilt' },
     { id: 'tutu_pink', type: 'bottoms', source: require('../assets/clothes/bottoms/tutu.png'), name: 'Tutu', locked: true, cost: 1 },
-    { id: 'hawaiian_yahenda', type: 'bottoms', source: require('../assets/clothes/bottoms/hawaiian_yahenda.png'), name: 'Yahenda', locked: true, cost: 2 },
+    { id: 'hawaiian_yahenda', type: 'bottoms', source: require('../assets/clothes/bottoms/hawaiian_yahenda.png'), name: "Pa'u", locked: true, cost: 2 },
+    { id: 'jean_skirt', type: 'bottoms', source: require('../assets/clothes/bottoms/jean-skirt.png'), name: 'Jean Skirt', locked: true, cost: 2 },
 ];
 
 export const shoes = [
@@ -134,6 +135,11 @@ export const ANIMAL_FITS = {
         hat: { y: -140, scale: 0.35 },
         glasses: { y: -40, scale: 0.35 },
     },
+    wolf: {
+        torso: { width: 200, height: 180, y: 110 },
+        hat: { y: -145, scale: 0.5 },
+        glasses: { y: -50, scale: 0.45 },
+    },
 };
 
 export const COMPOSITES = {
@@ -183,5 +189,9 @@ export const COMPOSITES = {
     'axolotl_red_shirt': require('../assets/clothes/tops/axolotl_red_shirt_composite.png'),
     'axolotl_hawaiian_shirt': require('../assets/clothes/tops/axolotl_hawaiian_shirt_composite.png'),
     'axolotl_dress_shirt': require('../assets/clothes/tops/axolotl_dress_shirt_composite.png'),
+
+    'wolf_red_shirt': require('../assets/clothes/tops/wolf_red_shirt_composite.png'),
+    'wolf_hawaiian_shirt': require('../assets/clothes/tops/wolf_hawaiian_shirt_composite.png'),
+    'wolf_dress_shirt': require('../assets/clothes/tops/wolf_dress_shirt_composite.png'),
 
 };

@@ -51,6 +51,7 @@ export default function App() {
   // EASTER EGG STATE 🥚
   const [eggCount, setEggCount] = useState(0);
   const [sugarGliderTaps, setSugarGliderTaps] = useState(0); // Secret Stash Tracker 🐿️
+  const [wolfTaps, setWolfTaps] = useState(0); // Full Moon Tracker 🐺
   const [petCount, setPetCount] = useState(0); // Petting Tracker 🐾
   const [gems, setGems] = useState(0); // Gems Currency 💎
   const [isAntiGravity, setIsAntiGravity] = useState(false); // ANIMATION SHARED VALUES
@@ -83,6 +84,22 @@ export default function App() {
     const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
     return () => backHandler.remove();
   }, [currentScreen, isAboutVisible, isSaveModalVisible]);
+
+  // Ensure snapshots directory exists
+  useEffect(() => {
+    const ensureDirAsync = async () => {
+      const dir = FileSystem.documentDirectory + 'snapshots/';
+      try {
+        const dirInfo = await FileSystem.getInfoAsync(dir);
+        if (!dirInfo.exists) {
+          await FileSystem.makeDirectoryAsync(dir, { intermediates: true });
+        }
+      } catch (e) {
+        console.log("Error ensuring snapshots dir:", e);
+      }
+    };
+    ensureDirAsync();
+  }, []);
 
   // LOAD OUTFITS ON MOUNT
   useEffect(() => {
@@ -208,6 +225,30 @@ export default function App() {
     return false;
   };
 
+  // Helper for Wolf Easter Egg
+  const checkWolfTap = (animalId) => {
+    if (animalId === 'wolf') {
+      const newTaps = wolfTaps + 1;
+      setWolfTaps(newTaps);
+
+      if (newTaps === 5) {
+        if (!milestones.includes('wolf_pack')) {
+          // Grant Reward
+          const newMilestones = [...milestones, 'wolf_pack'];
+          const newGems = gems + 10;
+
+          saveGems(newGems);
+          setMilestones(newMilestones);
+          AsyncStorage.setItem('@dress_it_up_milestones', JSON.stringify(newMilestones));
+
+          Alert.alert("🌕 Awooo!", "The pack hears your call! (+10 Gems)");
+          return true; // Triggered
+        }
+      }
+    }
+    return false;
+  };
+
   const handlePetAnimal = () => {
     const newCount = petCount + 1;
     setPetCount(newCount);
@@ -234,6 +275,8 @@ export default function App() {
 
     // EASTER EGG: SUGAR GLIDER SECRET STASH 🐿️
     if (checkSugarGliderTap(animal.id)) return;
+    // EASTER EGG: WOLF PACK 🐺
+    if (checkWolfTap(animal.id)) return;
 
     if (gems >= animal.cost) {
       Alert.alert(
@@ -640,6 +683,13 @@ export default function App() {
             setSavedOutfits(updatedList);
             saveOutfitsToStorage(updatedList);
 
+            // Delete snapshot file if exists
+            const outfitToDelete = savedOutfits.find(o => o.id === outfitId);
+            if (outfitToDelete && outfitToDelete.snapshotUri) {
+              FileSystem.deleteAsync(outfitToDelete.snapshotUri, { idempotent: true })
+                .catch(e => console.log("Failed to delete snapshot:", e));
+            }
+
             // If we deleted the currently active outfit, reset tracking
             if (currentOutfitId === outfitId) {
               setCurrentOutfitId(null);
@@ -650,12 +700,35 @@ export default function App() {
     );
   };
 
-  const handleSaveOutfit = (name) => {
+  const handleSaveOutfit = async (name) => {
     const bgObj = backgrounds.find(b => b.source === currentBackground);
     const backgroundId = bgObj ? bgObj.id : null;
 
     // Use current ID if overwriting, else generate new one
     const idToUse = currentOutfitId || Date.now().toString();
+
+    // Capture Snapshot
+    let snapshotUri = null;
+    try {
+      if (viewShotRef.current) {
+        const tempUri = await captureRef(viewShotRef, {
+          format: 'png',
+          quality: 0.8,
+          result: 'tmpfile',
+        });
+
+        const fileName = `snapshot_${idToUse}.png`;
+        const newPath = FileSystem.documentDirectory + 'snapshots/' + fileName;
+
+        await FileSystem.moveAsync({
+          from: tempUri,
+          to: newPath
+        });
+        snapshotUri = newPath;
+      }
+    } catch (e) {
+      console.log("Snapshot capture failed:", e);
+    }
 
     const newSavedOutfit = {
       id: idToUse,
@@ -666,6 +739,7 @@ export default function App() {
       backgroundId: backgroundId,
       outfit: currentOutfit,
       date: new Date().toISOString(),
+      snapshotUri: snapshotUri,
     };
 
     let updatedList;
@@ -769,6 +843,7 @@ export default function App() {
                 onUnlock={(animal) => handleUnlockAnimal(animal)}
                 onSelectAnimal={(animal) => {
                   checkSugarGliderTap(animal.id);
+                  checkWolfTap(animal.id);
                   console.log('[App] Resetting outfit for selected animal:', animal.id);
                   setHistory([{ outfit: { hat: [], glasses: [], jewelry: [], neckwear: [], top: [], bottoms: [], shoes: [] }, background: null }]);
                   setHistoryIndex(0);

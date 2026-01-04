@@ -71,20 +71,29 @@ export default function SavedOutfitsList({ savedOutfits, onLoad, onDelete }) {
                         activeOpacity={0.7}
                     >
                         <View style={styles.imageContainer}>
-                            {/* 1. Base Animal */}
-                            <Image
-                                source={outfit.animal}
-                                style={styles.baseAnimal}
-                            />
+                            {outfit.snapshotUri ? (
+                                <Image
+                                    source={{ uri: outfit.snapshotUri }}
+                                    style={styles.snapshotImage}
+                                />
+                            ) : (
+                                <>
+                                    {/* 1. Base Animal */}
+                                    <Image
+                                        source={outfit.animal}
+                                        style={styles.baseAnimal}
+                                    />
 
-                            {/* 2. Accessories (Order: Shoes -> Bottoms -> Tops -> Jewelry -> Glasses -> Hats) */}
-                            {renderLayer(outfit.outfit?.shoes, 'shoes')}
-                            {renderLayer(outfit.outfit?.bottoms, 'bottoms')}
-                            {renderLayer(outfit.outfit?.top, 'top')}
-                            {renderLayer(outfit.outfit?.neckwear, 'neckwear')}
-                            {renderLayer(outfit.outfit?.jewelry, 'jewelry')}
-                            {renderLayer(outfit.outfit.glasses, 'glasses')}
-                            {renderLayer(outfit.outfit?.hat, 'hat')}
+                                    {/* 2. Accessories */}
+                                    {renderLayer(outfit.outfit?.shoes, 'shoes')}
+                                    {renderLayer(outfit.outfit?.bottoms, 'bottoms')}
+                                    {renderLayer(outfit.outfit?.top, 'top')}
+                                    {renderLayer(outfit.outfit?.neckwear, 'neckwear')}
+                                    {renderLayer(outfit.outfit?.jewelry, 'jewelry')}
+                                    {renderLayer(outfit.outfit.glasses, 'glasses')}
+                                    {renderLayer(outfit.outfit?.hat, 'hat')}
+                                </>
+                            )}
                         </View>
                         <TouchableOpacity
                             style={styles.deleteButton}
@@ -162,6 +171,11 @@ const styles = StyleSheet.create({
         resizeMode: 'contain',
         // Visual debug
         // opacity: 0.8
+    },
+    snapshotImage: {
+        width: '100%',
+        height: '100%',
+        resizeMode: 'cover',
     },
     labelContainer: {
         alignItems: 'center',
