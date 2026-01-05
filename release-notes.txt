@@ -1,4 +1,4 @@
-Dress It Up! v1.8.0 Release Notes
+Dress It Up! v1.8.1 Release Notes
 
 Fabulous New Finds! 👗🌺🏴󠁧󠁢󠁳󠁣󠁴󠁿
 
@@ -6,6 +6,8 @@ What's New:
 - 🐺 New Animal: The Wolf is here! (Locked, Cost: 5 Gems)
     *   *Rumor has it that if you tap the Wolf enough times, the pack will answer...* 🌕
 - 🏴󠁧󠁢󠁳󠁣󠁴󠁿 New Bottoms: Added a Traditional Kilt and a Cute Jean Skirt!
+- 📸 Improved Gallery: Saved snapshots now use real images for better quality!
+- ⚡ Performance: Optimized asset sizes for faster loading and less memory usage.
 - 🩰 Dance Ready: Added a Pink Tutu and new Ballet Shoes.
 - 🌺 Island Vibes: Added the "Pa'u" Hawaiian sarong.
 - 🕶️ Style Fixes: Fixed an issue where Flip Flops and Dress Shoes were shy and wouldn't appear. They are now confident and ready to wear!
