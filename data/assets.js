@@ -25,6 +25,7 @@ export const glasses = [
     { id: 'seeing_glasses', type: 'glasses', source: require('../assets/clothes/glasses/seeing_glasses.png'), name: 'Seeing Glasses' },
     { id: 'fancy_glasses', type: 'glasses', source: require('../assets/clothes/glasses/fancy_glasses.png'), name: 'Fancy Glasses' },
     { id: 'wrap_around_glasses', type: 'glasses', source: require('../assets/clothes/glasses/wrap_around_glasses.png'), name: 'Wrap Around', locked: true, cost: 2 },
+    { id: 'groucho_glasses', type: 'glasses', source: require('../assets/clothes/glasses/groucho_glasses.png'), name: 'Disguise', locked: true, cost: 2 },
 ];
 
 export const jewelry = [
@@ -43,6 +44,7 @@ export const neckwear = [
     { id: 'bow_tie', type: 'neckwear', source: require('../assets/clothes/neckwear/bow_tie.png'), name: 'Bow Tie' },
     { id: 'blue_bandana', type: 'neckwear', source: require('../assets/clothes/neckwear/blue_bandana.png'), name: 'Blue Bandana' },
     { id: 'spiked_collar', type: 'neckwear', source: require('../assets/clothes/neckwear/spiked_collar.png'), name: 'Spiked Collar', locked: true, cost: 2 },
+    { id: 'ascot', type: 'neckwear', source: require('../assets/clothes/neckwear/ascot.png'), name: 'Ascot', locked: true, cost: 2 },
 ];
 
 export const tops = [
@@ -139,6 +141,11 @@ export const ANIMAL_FITS = {
         torso: { width: 200, height: 180, y: 110 },
         hat: { y: -145, scale: 0.5 },
         glasses: { y: -50, scale: 0.45 },
+    },
+    sugar_glider: {
+        torso: { width: 140, height: 140, y: 110 },
+        hat: { y: -130, scale: 0.4 },
+        glasses: { y: -45, scale: 0.4 },
     },
 };
 

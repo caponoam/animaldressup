@@ -1,17 +1,6 @@
-Dress It Up! v1.8.1 Release Notes
-
-Fabulous New Finds! 👗🌺🏴󠁧󠁢󠁳󠁣󠁴󠁿
-
-What's New:
-- 🐺 New Animal: The Wolf is here! (Locked, Cost: 5 Gems)
-    *   *Rumor has it that if you tap the Wolf enough times, the pack will answer...* 🌕
-- 🏴󠁧󠁢󠁳󠁣󠁴󠁿 New Bottoms: Added a Traditional Kilt and a Cute Jean Skirt!
-- 📸 Improved Gallery: Saved snapshots now use real images for better quality!
-- ⚡ Performance: Optimized asset sizes for faster loading and less memory usage.
-- 🩰 Dance Ready: Added a Pink Tutu and new Ballet Shoes.
-- 🌺 Island Vibes: Added the "Pa'u" Hawaiian sarong.
-- 🕶️ Style Fixes: Fixed an issue where Flip Flops and Dress Shoes were shy and wouldn't appear. They are now confident and ready to wear!
-- ⚡ Performance Boost: Major optimization to asset memory, making the app faster and more stable on all devices.
-- 🐾 Secret Surprise: Can you find the new "Pet the Animal" hidden feature? (Hint: They love attention!)
-
-Enjoying the update? Rate us!
+v1.8.2
+- AI Easter Egg: find it... let the AI randomize your outfit! (+5 Gem Reward)
+- Added Unsaved Changes protection when exiting the dress-up screen
+- Added "Save & Exit" workflow
+- New Items: Groucho Glasses (2 Gems), Ascot (2 Gems)
+- Improved accessory sizing for smaller animals (Mouse, Sugar Glider)

@@ -61,29 +61,7 @@ export default function App() {
   const STORAGE_KEY = '@dress_it_up_outfits_v1';
 
   // HARDWARE BACK BUTTON HANDLER
-  useEffect(() => {
-    const backAction = () => {
-      if (isGemsInfoVisible) {
-        setIsGemsInfoVisible(false);
-        return true;
-      }
-      if (isAboutVisible) {
-        setIsAboutVisible(false);
-        return true;
-      }
-      if (isSaveModalVisible) {
-        setIsSaveModalVisible(false);
-        return true;
-      }
-      if (currentScreen === 'dressup') {
-        setCurrentScreen('selection');
-        return true;
-      }
-      return false;
-    };
-    const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
-    return () => backHandler.remove();
-  }, [currentScreen, isAboutVisible, isSaveModalVisible]);
+
 
   // Ensure snapshots directory exists
   useEffect(() => {
@@ -431,6 +409,8 @@ export default function App() {
     { outfit: { hat: [], glasses: [], jewelry: [], neckwear: [], top: [], bottoms: [], shoes: [] }, background: null }
   ]);
   const [historyIndex, setHistoryIndex] = useState(0);
+  const [lastSavedIndex, setLastSavedIndex] = useState(0); // Track saved state for dirty check
+  const [pendingExit, setPendingExit] = useState(false); // Track if save was initiated by exit attempt
 
   // SAVE / LOAD STATE
   // SAVE / LOAD STATE references moved to top
@@ -510,26 +490,30 @@ export default function App() {
     let scaleY = animalFit[type]?.scale || 0.5;
     let yOffset = animalFit[type]?.y || 0;
 
+    // Calculate a relative scale factor based on the animal's torso width compared to base shirt
+    // If torso is 240 (standard), factor is 1. If torso is 120 (mouse), factor is 0.5.
+    const sizeFactor = (animalFit.torso.width / SHIRT_BASE_WIDTH) || 1;
+
     if (type === 'top') {
-      scaleX = animalFit.torso.width / SHIRT_BASE_WIDTH;
+      scaleX = sizeFactor;
       scaleY = animalFit.torso.height / SHIRT_BASE_HEIGHT;
       yOffset = animalFit.torso.y;
     } else if (type === 'jewelry') {
       yOffset = animalFit.torso.y - 30;
-      scaleX = 0.25;
-      scaleY = 0.25;
+      scaleX = 0.25 * sizeFactor;
+      scaleY = 0.25 * sizeFactor;
     } else if (type === 'neckwear') {
       yOffset = animalFit.torso.y - 20;
-      scaleX = 0.4;
-      scaleY = 0.4;
+      scaleX = 0.4 * sizeFactor;
+      scaleY = 0.4 * sizeFactor;
     } else if (type === 'bottoms') {
       yOffset = animalFit.torso.y + 100;
-      scaleX = 0.5;
-      scaleY = 0.5;
+      scaleX = 0.5 * sizeFactor;
+      scaleY = 0.5 * sizeFactor;
     } else if (type === 'shoes') {
       yOffset = animalFit.torso.y + 180;
-      scaleX = 0.4;
-      scaleY = 0.4;
+      scaleX = 0.4 * sizeFactor;
+      scaleY = 0.4 * sizeFactor;
     }
 
     const result = {
@@ -610,9 +594,63 @@ export default function App() {
   const animalY = useSharedValue(0);
   const animalStartContext = useSharedValue({ x: 0, y: 0 });
 
-  const handleBackPress = () => {
+  const handleExitDressUp = () => {
+    // Check for unsaved changes (dirty check)
+    if (historyIndex !== lastSavedIndex) {
+      Alert.alert(
+        "Unsaved Changes",
+        "You have unsaved changes. Do you want to save them before leaving?",
+        [
+          { text: "Cancel", style: "cancel", onPress: () => { /* Do nothing, stay here */ } },
+          {
+            text: "Discard",
+            style: "destructive",
+            onPress: () => setCurrentScreen('selection')
+          },
+          {
+            text: "Save",
+            onPress: () => {
+              setPendingExit(true);
+              setIsSaveModalVisible(true);
+            }
+          }
+        ]
+      );
+      return true; // Handled
+    }
+
+    // Clean exit
     setCurrentScreen('selection');
+    return true; // Handled
   };
+
+  const handleBackPress = () => {
+    handleExitDressUp();
+  };
+
+  // HARDWARE BACK BUTTON HANDLER
+  useEffect(() => {
+    const backAction = () => {
+      if (isGemsInfoVisible) {
+        setIsGemsInfoVisible(false);
+        return true;
+      }
+      if (isAboutVisible) {
+        setIsAboutVisible(false);
+        return true;
+      }
+      if (isSaveModalVisible) {
+        setIsSaveModalVisible(false);
+        return true;
+      }
+      if (currentScreen === 'dressup') {
+        return handleExitDressUp();
+      }
+      return false;
+    };
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
+    return () => backHandler.remove();
+  }, [currentScreen, isAboutVisible, isSaveModalVisible, historyIndex, lastSavedIndex, isGemsInfoVisible]); // Dependencies updated for closure access
 
   const animalDragGesture = Gesture.Pan()
     .onStart(() => {
@@ -755,6 +793,14 @@ export default function App() {
     setSavedOutfits(updatedList);
     saveOutfitsToStorage(updatedList);
     checkAndAwardMilestones(updatedList, gems);
+    setLastSavedIndex(historyIndex); // Mark current state as saved
+
+    if (pendingExit) {
+      setCurrentScreen('selection');
+      setPendingExit(false);
+    } else {
+      Alert.alert("Saved!", "Outfit saved successfully!"); // Simple feedback
+    }
   };
 
   const handleLoadOutfit = (savedOutfit) => {
@@ -764,6 +810,7 @@ export default function App() {
 
     setHistory([{ outfit: savedOutfit.outfit, background: savedOutfit.background }]);
     setHistoryIndex(0);
+    setLastSavedIndex(0); // Loaded state is clean at index 0
 
     setCurrentScreen('dressup');
   };
@@ -792,6 +839,109 @@ export default function App() {
   //   available: isCompositeAvailable,
   //   animalSource: selectedAnimal === renderedAnimalSource ? 'Base' : 'Composite'
   // });
+
+  const handleAIOutfit = () => {
+    // 1. Build a new empty outfit
+    const newOutfit = { hat: [], glasses: [], jewelry: [], neckwear: [], top: [], bottoms: [], shoes: [] };
+
+    // 2. Define categories to pick from
+    const allCategories = [
+      { key: 'hat', data: hats },
+      { key: 'glasses', data: glasses },
+      { key: 'jewelry', data: jewelry },
+      { key: 'neckwear', data: neckwear },
+      { key: 'top', data: tops },
+      { key: 'bottoms', data: bottoms },
+      { key: 'shoes', data: shoes }
+    ];
+
+    // Shuffle and pick 5 unique categories
+    const shuffled = allCategories.sort(() => 0.5 - Math.random());
+    const selectedCategories = shuffled.slice(0, 5);
+
+    // 3. Randomly pick a background
+    const unlockedBackgrounds = backgrounds.filter(b => !b.cost || unlockedAccessories.includes(b.id));
+    const randomBgIndex = Math.floor(Math.random() * unlockedBackgrounds.length);
+    const selectedBackground = unlockedBackgrounds[randomBgIndex]?.source;
+
+
+    // 4. Randomly pick items for the SELECTED 5 categories
+    selectedCategories.forEach(cat => {
+      // Filter unlocked items
+      const unlockedItems = cat.data.filter(item => !item.cost || unlockedAccessories.includes(item.id));
+
+      if (unlockedItems.length > 0) {
+        // Pick one random item
+        const randomIndex = Math.floor(Math.random() * unlockedItems.length);
+        const selectedItem = unlockedItems[randomIndex];
+
+        // Calculate Position
+        const transform = getInitialTransform(cat.key);
+
+        if (cat.key === 'shoes') {
+          // SHOES EXCEPTION: Create a Pair! 👟👟
+
+          // Left Shoe (Normal)
+          newOutfit[cat.key].push({
+            instanceId: Date.now() + Math.random(),
+            itemId: selectedItem.id,
+            source: selectedItem.source,
+            x: transform.x - 40, // Offset Left
+            y: transform.y,
+            scaleX: transform.scaleX,
+            scaleY: transform.scaleY,
+            rotation: transform.rotation
+          });
+
+          // Right Shoe (Flipped/Mirrored & Offset)
+          newOutfit[cat.key].push({
+            instanceId: Date.now() + Math.random() + 1,
+            itemId: selectedItem.id,
+            source: selectedItem.source,
+            x: transform.x + 40, // Offset Right
+            y: transform.y,
+            scaleX: -1 * transform.scaleX, // FLIP IT!
+            scaleY: transform.scaleY,
+            rotation: transform.rotation
+          });
+
+        } else {
+          // Normal Logic for other items
+          newOutfit[cat.key].push({
+            instanceId: Date.now() + Math.random(),
+            itemId: selectedItem.id,
+            source: selectedItem.source,
+            x: transform.x,
+            y: transform.y,
+            scaleX: transform.scaleX,
+            scaleY: transform.scaleY,
+            rotation: transform.rotation
+          });
+        }
+      }
+    });
+
+    // 5. Apply everything
+    addToHistory(newOutfit, selectedBackground);
+
+    // 6. Feedback & Reward
+    let alertTitle = "🤖 Beep Boop!";
+    let alertMessage = "I picked 5 random items for you!";
+
+    if (!milestones.includes('ai_finder')) {
+      const newGems = gems + 5;
+      const newMilestones = [...milestones, 'ai_finder'];
+
+      saveGems(newGems);
+      setMilestones(newMilestones);
+      AsyncStorage.setItem('@dress_it_up_milestones', JSON.stringify(newMilestones));
+
+      alertTitle = "🤖 SECRET FOUND!";
+      alertMessage = "You found the AI Designer! (+5 Gems)\nI picked 5 random items for you!";
+    }
+
+    Alert.alert(alertTitle, alertMessage);
+  };
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -847,6 +997,7 @@ export default function App() {
                   console.log('[App] Resetting outfit for selected animal:', animal.id);
                   setHistory([{ outfit: { hat: [], glasses: [], jewelry: [], neckwear: [], top: [], bottoms: [], shoes: [] }, background: null }]);
                   setHistoryIndex(0);
+                  setLastSavedIndex(0); // Fresh start is clean
                   setCurrentOutfitId(null);
                   setSelectedAnimal(animal.source);
                   setSelectedAnimalId(animal.id);
@@ -907,6 +1058,8 @@ export default function App() {
               {/* TRASH - ORANGE */}
               <TouchableOpacity
                 onPress={resetOutfit}
+                onLongPress={handleAIOutfit}
+                delayLongPress={800}
                 style={[styles.nintendoButton, { backgroundColor: '#FF8D29', borderColor: '#E65100' }]}
               >
                 <Text style={[styles.nintendoText, { fontSize: 24 }]}>🗑️</Text>
@@ -1112,7 +1265,7 @@ export default function App() {
         {/* SAVE MODAL */}
         <SaveModal
           visible={isSaveModalVisible}
-          onClose={() => setIsSaveModalVisible(false)}
+          onClose={() => { requestAnimationFrame(() => setIsSaveModalVisible(false)); setPendingExit(false); }}
           onSave={handleSaveOutfit}
           initialName={currentOutfitId ? savedOutfits.find(o => o.id === currentOutfitId)?.name : ''}
           isUpdate={!!currentOutfitId}
