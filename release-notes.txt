@@ -1,6 +1,10 @@
-v1.8.2
+v1.8.3
 - AI Easter Egg: find it... let the AI randomize your outfit! (+5 Gem Reward)
 - Added Unsaved Changes protection when exiting the dress-up screen
 - Added "Save & Exit" workflow
-- New Items: Groucho Glasses (2 Gems), Ascot (2 Gems)
+- New Animal: Meerkat (10 Gems)
+- New Items: Gi Top (3 Gems), Groucho Glasses (2 Gems), Ascot (2 Gems)
+- New Background: Karate Dojo (2 Gems)
+- Bug Fix: Fixed issue where some items (like the Dojo) wouldn't unlock correctly
+- Feature: Added automatic app update check on startup
 - Improved accessory sizing for smaller animals (Mouse, Sugar Glider)

@@ -1,6 +1,6 @@
 
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Image, TouchableOpacity, ScrollView, Alert, Dimensions, Modal, BackHandler, useWindowDimensions, I18nManager } from 'react-native';
+import { StyleSheet, Text, View, Image, TouchableOpacity, ScrollView, Alert, Dimensions, Modal, BackHandler, useWindowDimensions, I18nManager, Platform } from 'react-native';
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { GestureHandlerRootView, GestureDetector, Gesture, Directions } from 'react-native-gesture-handler';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, withTiming, withRepeat, withSequence, Easing, runOnJS } from 'react-native-reanimated';
@@ -9,6 +9,7 @@ import { shareAsync } from 'expo-sharing';
 import { captureRef } from 'react-native-view-shot';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as FileSystem from 'expo-file-system/legacy';
+import SpInAppUpdates, { IAUUpdateKind } from 'sp-react-native-in-app-updates';
 
 import AnimalPicker from './components/AnimalPicker';
 import SlidingDrawer from './components/SlidingDrawer';
@@ -59,6 +60,27 @@ export default function App() {
 
   // STORAGE KEY
   const STORAGE_KEY = '@dress_it_up_outfits_v1';
+
+  // CHECK FOR UPDATES
+  useEffect(() => {
+    // Only check on Android (library dependency)
+    if (Platform.OS === 'android') {
+      try {
+        const inAppUpdates = new SpInAppUpdates(false);
+        inAppUpdates.checkNeedsUpdate().then((result) => {
+          if (result.shouldUpdate) {
+            inAppUpdates.startUpdate({
+              updateType: IAUUpdateKind.IMMEDIATE,
+            });
+          }
+        }).catch(err => {
+          console.log("Error checking for updates:", err);
+        });
+      } catch (e) {
+        console.log("Error initializing update check:", e);
+      }
+    }
+  }, []);
 
   // HARDWARE BACK BUTTON HANDLER
 
@@ -266,13 +288,15 @@ export default function App() {
             text: "Unlock!",
             onPress: () => {
               const newGemCount = gems - animal.cost;
-              const newUnlocked = [...unlockedAnimals, animal.id];
+
+              setUnlockedAnimals(prev => {
+                const newUnlocked = [...prev, animal.id];
+                AsyncStorage.setItem('@dress_it_up_unlocked_animals', JSON.stringify(newUnlocked));
+                return newUnlocked;
+              });
 
               saveGems(newGemCount);
-              setUnlockedAnimals(newUnlocked);
-              AsyncStorage.setItem('@dress_it_up_unlocked_animals', JSON.stringify(newUnlocked));
-
-              Alert.alert("Unlocked!", "You have a new friend! 🐾");
+              Alert.alert("Unlocked!", `${animal.id} joined the party!`);
             }
           }
         ]
@@ -293,11 +317,14 @@ export default function App() {
             text: "Unlock!",
             onPress: () => {
               const newGemCount = gems - item.cost;
-              const newUnlocked = [...unlockedAccessories, item.id];
+
+              setUnlockedAccessories(prev => {
+                const newUnlocked = [...prev, item.id];
+                AsyncStorage.setItem('@dress_it_up_unlocked_accessories', JSON.stringify(newUnlocked));
+                return newUnlocked;
+              });
 
               saveGems(newGemCount);
-              setUnlockedAccessories(newUnlocked);
-              AsyncStorage.setItem('@dress_it_up_unlocked_accessories', JSON.stringify(newUnlocked));
               Alert.alert("Unlocked!", "New style added to your wardrobe!");
             }
           }

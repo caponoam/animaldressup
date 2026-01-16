@@ -7,6 +7,7 @@ export const backgrounds = [
     { id: 'basketball_court', source: require('../assets/backgrounds/basketball_court.png'), name: 'Court' },
     { id: 'beach', source: require('../assets/backgrounds/beach.png'), name: 'Beach', locked: true, cost: 2 },
     { id: 'rainforest', source: require('../assets/backgrounds/rainforest.png'), name: 'Rainforest', locked: true, cost: 2 },
+    { id: 'dojo', source: require('../assets/backgrounds/dojo.png'), name: 'Dojo', locked: true, cost: 2 },
     { id: 'none', source: null, name: 'None' },
 ];
 
@@ -51,6 +52,7 @@ export const tops = [
     { id: 'red_shirt', type: 'top', source: require('../assets/clothes/tops/red_shirt.png'), name: 'Red Shirt' },
     { id: 'hawaiian_shirt', type: 'top', source: require('../assets/clothes/tops/hawaiian_shirt.png'), name: 'Hawaiian Shirt' },
     { id: 'dress_shirt', type: 'top', source: require('../assets/clothes/tops/dress_shirt.png'), name: 'Dress Shirt' },
+    { id: 'gi', type: 'top', source: require('../assets/clothes/tops/gi.png'), name: 'Gi', locked: true, cost: 3 },
 ];
 
 export const bottoms = [
@@ -147,58 +149,91 @@ export const ANIMAL_FITS = {
         hat: { y: -130, scale: 0.4 },
         glasses: { y: -45, scale: 0.4 },
     },
+    meerkat: {
+        torso: { width: 130, height: 160, y: 110 },
+        hat: { y: -140, scale: 0.4 },
+        glasses: { y: -50, scale: 0.4 },
+    },
 };
 
 export const COMPOSITES = {
     'bear_red_shirt': require('../assets/clothes/tops/bear_red_shirt_composite.png'),
     'bear_hawaiian_shirt': require('../assets/clothes/tops/bear_hawaiian_shirt_composite.png'),
     'bear_dress_shirt': require('../assets/clothes/tops/bear_dress_shirt_composite.png'),
+    'bear_gi': require('../assets/clothes/tops/bear_gi_composite.png'),
+
     'bunny_red_shirt': require('../assets/clothes/tops/bunny_red_shirt_composite.png'),
     'bunny_hawaiian_shirt': require('../assets/clothes/tops/bunny_hawaiian_shirt_composite.png'),
     'bunny_dress_shirt': require('../assets/clothes/tops/bunny_dress_shirt_composite.png'),
+    'bunny_gi': require('../assets/clothes/tops/bunny_gi_composite.png'),
+
     'capybara_red_shirt': require('../assets/clothes/tops/capybara_red_shirt_composite.png'),
     'capybara_hawaiian_shirt': require('../assets/clothes/tops/capybara_hawaiian_shirt_composite.png'),
     'capybara_dress_shirt': require('../assets/clothes/tops/capybara_dress_shirt_composite.png'),
+    'capybara_gi': require('../assets/clothes/tops/capybara_gi_composite.png'),
+
     'cat_red_shirt': require('../assets/clothes/tops/cat_red_shirt_composite.png'),
     'cat_hawaiian_shirt': require('../assets/clothes/tops/cat_hawaiian_shirt_composite.png'),
     'cat_dress_shirt': require('../assets/clothes/tops/cat_dress_shirt_composite.png'),
+    'cat_gi': require('../assets/clothes/tops/cat_gi_composite.png'),
+
     'dog_red_shirt': require('../assets/clothes/tops/dog_red_shirt_composite.png'),
     'dog_hawaiian_shirt': require('../assets/clothes/tops/dog_hawaiian_shirt_composite.png'),
     'dog_dress_shirt': require('../assets/clothes/tops/dog_dress_shirt_composite.png'),
+    'dog_gi': require('../assets/clothes/tops/dog_gi_composite.png'),
 
     'mouse_red_shirt': require('../assets/clothes/tops/mouse_red_shirt_composite.png'),
     'mouse_hawaiian_shirt': require('../assets/clothes/tops/mouse_hawaiian_shirt_composite.png'),
     'mouse_dress_shirt': require('../assets/clothes/tops/mouse_dress_shirt_composite.png'),
+    'mouse_gi': require('../assets/clothes/tops/mouse_gi_composite.png'),
+
     'monkey_red_shirt': require('../assets/clothes/tops/monkey_red_shirt_composite.png'),
     'monkey_hawaiian_shirt': require('../assets/clothes/tops/monkey_hawaiian_shirt_composite.png'),
     'monkey_dress_shirt': require('../assets/clothes/tops/monkey_dress_shirt_composite.png'),
+    'monkey_gi': require('../assets/clothes/tops/monkey_gi_composite.png'),
+
     'tiger_red_shirt': require('../assets/clothes/tops/tiger_red_shirt_composite.png'),
     'tiger_hawaiian_shirt': require('../assets/clothes/tops/tiger_hawaiian_shirt_composite.png'),
     'tiger_dress_shirt': require('../assets/clothes/tops/tiger_dress_shirt_composite.png'),
+    'tiger_gi': require('../assets/clothes/tops/tiger_gi_composite.png'),
+
     'lion_red_shirt': require('../assets/clothes/tops/lion_red_shirt_composite.png'),
     'lion_hawaiian_shirt': require('../assets/clothes/tops/lion_hawaiian_shirt_composite.png'),
     'lion_dress_shirt': require('../assets/clothes/tops/lion_dress_shirt_composite.png'),
+    'lion_gi': require('../assets/clothes/tops/lion_gi_composite.png'),
+
     'penguin_red_shirt': require('../assets/clothes/tops/penguin_red_shirt_composite.png'),
     'penguin_hawaiian_shirt': require('../assets/clothes/tops/penguin_hawaiian_shirt_composite.png'),
     'penguin_dress_shirt': require('../assets/clothes/tops/penguin_dress_shirt_composite.png'),
+    'penguin_gi': require('../assets/clothes/tops/penguin_gi_composite.png'),
+
     'sloth_red_shirt': require('../assets/clothes/tops/sloth_red_shirt_composite.png'),
     'sloth_hawaiian_shirt': require('../assets/clothes/tops/sloth_hawaiian_shirt_composite.png'),
     'sloth_dress_shirt': require('../assets/clothes/tops/sloth_dress_shirt_composite.png'),
+    'sloth_gi': require('../assets/clothes/tops/sloth_gi_composite.png'),
 
     'sugar_glider_red_shirt': require('../assets/clothes/tops/sugar_glider_red_shirt_composite.png'),
     'sugar_glider_hawaiian_shirt': require('../assets/clothes/tops/sugar_glider_hawaiian_shirt_composite.png'),
     'sugar_glider_dress_shirt': require('../assets/clothes/tops/sugar_glider_dress_shirt_composite.png'),
+    'sugar_glider_gi': require('../assets/clothes/tops/sugar_glider_gi_composite.png'),
 
     'lemur_red_shirt': require('../assets/clothes/tops/lemur_red_shirt_composite.png'),
     'lemur_hawaiian_shirt': require('../assets/clothes/tops/lemur_hawaiian_shirt_composite.png'),
     'lemur_dress_shirt': require('../assets/clothes/tops/lemur_dress_shirt_composite.png'),
+    'lemur_gi': require('../assets/clothes/tops/lemur_gi_composite.png'),
 
     'axolotl_red_shirt': require('../assets/clothes/tops/axolotl_red_shirt_composite.png'),
     'axolotl_hawaiian_shirt': require('../assets/clothes/tops/axolotl_hawaiian_shirt_composite.png'),
     'axolotl_dress_shirt': require('../assets/clothes/tops/axolotl_dress_shirt_composite.png'),
+    'axolotl_gi': require('../assets/clothes/tops/axolotl_gi_composite.png'),
 
     'wolf_red_shirt': require('../assets/clothes/tops/wolf_red_shirt_composite.png'),
     'wolf_hawaiian_shirt': require('../assets/clothes/tops/wolf_hawaiian_shirt_composite.png'),
     'wolf_dress_shirt': require('../assets/clothes/tops/wolf_dress_shirt_composite.png'),
+    'wolf_gi': require('../assets/clothes/tops/wolf_gi_composite.png'),
 
+    'meerkat_red_shirt': require('../assets/clothes/tops/meerkat_red_shirt_composite.png'),
+    'meerkat_hawaiian_shirt': require('../assets/clothes/tops/meerkat_hawaiian_shirt_composite.png'),
+    'meerkat_dress_shirt': require('../assets/clothes/tops/meerkat_dress_shirt_composite.png'),
+    'meerkat_gi': require('../assets/clothes/tops/meerkat_gi_composite.png'),
 };

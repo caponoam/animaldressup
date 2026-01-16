@@ -1,6 +1,6 @@
 [bug] gem jar on RTL goes left instead of right
 
-New animals: Panda
+New animals: Panda, hedgehog, porcupine, meerkat, kangaroo
 New accessories: 
 
 Fit the accessories, clothes, etc better to the animal better    
@@ -62,9 +62,9 @@ It should have a friendly expression. The style should match existing flat 2D ve
 Simple shapes, clean lines. No background (transparent).
 
 Composite:
-Combine these two images into a single composite image. The [ANIMAL] should be wearing the hawaiian shirt. 
-The shirt should fit naturally on the [ANIMAL]'s torso. Maintain the exact art style, resolution, and flat vector aesthetic. 
-The output should be the [ANIMAL] dressed in the shirt on a transparent background.
+Combine these two images into a single composite image. The ANIMAL should be wearing the dress shirt. 
+The shirt should fit naturally on the ANIMAL's torso. Maintain the exact art style, resolution, and flat vector aesthetic. 
+The output should be the ANIMAL dressed in the shirt on a transparent background. Make sure the hands are still visible
 
 Accessories:
 A gold chain, isolated on a transparent background, cartoon style, flat vector art, 
@@ -84,3 +84,6 @@ A sunny beach scene with golden sand and blue ocean water, a few palm trees on t
 
 For a Rainforest Background:
 A lush green rainforest glade, thick vegetation, hanging vines, dappled sunlight filtering through the canopy, colorful tropical flowers, cartoon style, flat vector art, simple and clean background, suitable for a  doll dress up game.
+
+karate dojo:
+A cute, cartoon style karate dojo interior. Wooden floor, tatami mats, japanese shoji screen walls, a scroll on the back wall. Flat 2D style suitable for a paper doll dress up game background. Bright colors, clean lines.
