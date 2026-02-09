@@ -1,6 +1,6 @@
 {
   "name": "dress-it-up",
-  "version": "1.8.3",
+  "version": "1.8.4",
   "main": "index.js",
   "scripts": {
     "start": "expo start",

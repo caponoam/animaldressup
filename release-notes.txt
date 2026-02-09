@@ -1,3 +1,10 @@
+v1.8.4
+- New Animal: Seal (5 Gems)
+- New Background: Underwater (2 Gems)
+- New Item: Mermaid Tail (2 Gems)
+- Bug Fix: Animal position now saves correctly
+- Bug Fix: Fixed Gem Jar issues
+
 v1.8.3
 - AI Easter Egg: find it... let the AI randomize your outfit! (+5 Gem Reward)
 - Added Unsaved Changes protection when exiting the dress-up screen
