@@ -8,6 +8,7 @@ export const backgrounds = [
     { id: 'beach', source: require('../assets/backgrounds/beach.png'), name: 'Beach', locked: true, cost: 2 },
     { id: 'rainforest', source: require('../assets/backgrounds/rainforest.png'), name: 'Rainforest', locked: true, cost: 2 },
     { id: 'dojo', source: require('../assets/backgrounds/dojo.png'), name: 'Dojo', locked: true, cost: 2 },
+    { id: 'underwater', source: require('../assets/backgrounds/underwater.png'), name: 'Underwater', locked: true, cost: 2 },
     { id: 'none', source: null, name: 'None' },
 ];
 
@@ -60,6 +61,7 @@ export const bottoms = [
     { id: 'tutu_pink', type: 'bottoms', source: require('../assets/clothes/bottoms/tutu.png'), name: 'Tutu', locked: true, cost: 1 },
     { id: 'hawaiian_yahenda', type: 'bottoms', source: require('../assets/clothes/bottoms/hawaiian_yahenda.png'), name: "Pa'u", locked: true, cost: 2 },
     { id: 'jean_skirt', type: 'bottoms', source: require('../assets/clothes/bottoms/jean-skirt.png'), name: 'Jean Skirt', locked: true, cost: 2 },
+    { id: 'mermaid_tail', type: 'bottoms', source: require('../assets/clothes/bottoms/mermaid_tail.png'), name: 'Mermaid Tail', locked: true, cost: 2 },
 ];
 
 export const shoes = [
@@ -154,6 +156,11 @@ export const ANIMAL_FITS = {
         hat: { y: -140, scale: 0.4 },
         glasses: { y: -50, scale: 0.4 },
     },
+    seal: {
+        torso: { width: 160, height: 180, y: 110 },
+        hat: { y: -130, scale: 0.45 },
+        glasses: { y: -50, scale: 0.45 },
+    },
 };
 
 export const COMPOSITES = {
@@ -236,4 +243,10 @@ export const COMPOSITES = {
     'meerkat_hawaiian_shirt': require('../assets/clothes/tops/meerkat_hawaiian_shirt_composite.png'),
     'meerkat_dress_shirt': require('../assets/clothes/tops/meerkat_dress_shirt_composite.png'),
     'meerkat_gi': require('../assets/clothes/tops/meerkat_gi_composite.png'),
+
+    'seal_red_shirt': require('../assets/clothes/tops/seal_red_shirt_composite.png'),
+    'seal_hawaiian_shirt': require('../assets/clothes/tops/seal_hawaiian_shirt_composite.png'),
+    'seal_dress_shirt': require('../assets/clothes/tops/seal_dress_shirt_composite.png'),
+    'seal_gi': require('../assets/clothes/tops/seal_gi_composite.png'),
+
 };

@@ -805,6 +805,8 @@ export default function App() {
       outfit: currentOutfit,
       date: new Date().toISOString(),
       snapshotUri: snapshotUri,
+      x: animalX.value,
+      y: animalY.value,
     };
 
     let updatedList;
@@ -838,6 +840,11 @@ export default function App() {
     setHistory([{ outfit: savedOutfit.outfit, background: savedOutfit.background }]);
     setHistoryIndex(0);
     setLastSavedIndex(0); // Loaded state is clean at index 0
+
+    // Restore Position
+    animalX.value = savedOutfit.x || 0;
+    animalY.value = savedOutfit.y || 0;
+    animalStartContext.value = { x: savedOutfit.x || 0, y: savedOutfit.y || 0 };
 
     setCurrentScreen('dressup');
   };
@@ -1028,6 +1035,10 @@ export default function App() {
                   setCurrentOutfitId(null);
                   setSelectedAnimal(animal.source);
                   setSelectedAnimalId(animal.id);
+                  // Reset Position
+                  animalX.value = 0;
+                  animalY.value = 0;
+                  animalStartContext.value = { x: 0, y: 0 };
                 }}
               />
             </View>

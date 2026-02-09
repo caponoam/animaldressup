@@ -1,6 +1,6 @@
-[bug] gem jar on RTL goes left instead of right
 
-New animals: Panda, hedgehog, porcupine, meerkat, kangaroo
+
+New animals: Panda, hedgehog, porcupine, seal, kangaroo
 New accessories: 
 
 Fit the accessories, clothes, etc better to the animal better    
@@ -8,13 +8,19 @@ apply clothes and accessories to the animal properly
 
 Drawers can't hide each other
 
+backgrounds: Underwater 
+Bottoms: mermaid tail
+Tops: Trench coat
+Glasses: magnifying glass
+
+
 
 Poses chooser
 
 
 
 ============================================================
-======================== DONE ========================
+============================ DONE ==========================
 ============================================================
 UNDO and REDO Buttons
 apply Background
@@ -32,6 +38,11 @@ Version number
 History of edited animals
 Easter eggs
 
+[Bug] animal position isn't being saved. 
+[Bug] Gem jar dissapears on edit page sometimes.
+[Bug] gem jar on RTL goes left instead of right
+
+
 app name: Animal Dress Up
 app icon: ?
 build apk
@@ -46,10 +57,7 @@ Fix trash issue/hot spot
 
 Gems (in app currency)
 Gem "jar"
-[Bug] Gem jar dissapears on edit page sometimes.
 
-New animals: leemmur
-New accessories: tiara, ballet shoes
 
 
 ********************************************************************************

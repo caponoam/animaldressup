@@ -11,9 +11,10 @@ export const BASE_ANIMALS = [
     { id: 'wolf', source: require('../assets/animals/wolf.png'), locked: true, cost: 5 },
     { id: 'tiger', source: require('../assets/animals/tiger.png'), locked: true, cost: 10 },
     { id: 'sloth', source: require('../assets/animals/sloth.png'), locked: true, cost: 10 },
-    { id: 'sugar_glider', source: require('../assets/animals/sugar_glider.png'), locked: true, cost: 10 },
+    { id: 'sugar_glider', source: require('../assets/animals/sugar_glider.png'), name: 'Sugar Glider', locked: true, cost: 5 },
     { id: 'lemur', source: require('../assets/animals/lemur.png'), locked: true, cost: 15 },
     { id: 'axolotl', source: require('../assets/animals/axolotl.png'), locked: true, cost: 15 },
-    { id: 'meerkat', source: require('../assets/animals/meerkat.png'), locked: true, cost: 10 },
+    { id: 'meerkat', source: require('../assets/animals/meerkat.png'), name: 'Meerkat', locked: true, cost: 3 },
+    { id: 'seal', source: require('../assets/animals/seal.png'), name: 'Seal', locked: true, cost: 5 },
 
 ];
