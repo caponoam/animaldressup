@@ -1,3 +1,6 @@
+v1.8.5
+- Optimization: Reduced download size (Optimized underwater background asset)
+
 v1.8.4
 - New Animal: Seal (5 Gems)
 - New Background: Underwater (2 Gems)
