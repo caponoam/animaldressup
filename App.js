@@ -1,6 +1,7 @@
 
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Image, TouchableOpacity, ScrollView, Alert, Dimensions, Modal, BackHandler, useWindowDimensions, I18nManager, Platform } from 'react-native';
+import { StyleSheet, Text, View, Image, TouchableOpacity, ScrollView, Alert, Dimensions, Modal, BackHandler, useWindowDimensions, I18nManager, Platform, TouchableWithoutFeedback } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { GestureHandlerRootView, GestureDetector, Gesture, Directions } from 'react-native-gesture-handler';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, withTiming, withRepeat, withSequence, Easing, runOnJS } from 'react-native-reanimated';
@@ -19,6 +20,8 @@ import AboutModal from './components/AboutModal';
 import SavedOutfitsList from './components/SavedOutfitsList';
 import GemsInfoModal from './components/GemsInfoModal';
 import AudioManager from './utils/AudioManager';
+import AchievementsManager from './utils/AchievementsManager';
+import UserProfileModal from './components/UserProfileModal';
 
 // DATA DEFINITIONS
 import { BASE_ANIMALS } from './data/animals';
@@ -59,6 +62,9 @@ export default function App() {
   const [isAntiGravity, setIsAntiGravity] = useState(false); // ANIMATION SHARED VALUES
   const gravityOffset = useSharedValue(0);
   const [isMuted, setIsMuted] = useState(true);
+  const [showUserProfile, setShowUserProfile] = useState(false);
+  const [achievements, setAchievements] = useState([]);
+  const [newBadge, setNewBadge] = useState(null);
 
   // STORAGE KEY
   const STORAGE_KEY = '@dress_it_up_outfits_v1';
@@ -88,6 +94,9 @@ export default function App() {
   useEffect(() => {
     const initAudio = async () => {
       await AudioManager.init();
+      AchievementsManager.init().then(() => {
+        setAchievements(AchievementsManager.getBadges());
+      });
       await AudioManager.playBackgroundMusic();
     };
     initAudio();
@@ -260,10 +269,86 @@ export default function App() {
     return false;
   };
 
+  const checkUnlock = async (stat, amount = 1) => {
+    const newUnlocks = await AchievementsManager.incrementStat(stat, amount);
+    if (newUnlocks.length > 0) {
+      const badge = newUnlocks[0];
+      setNewBadge(badge); // Just show first if multiple
+
+      // Award Gems
+      if (badge.reward) {
+        const newTotal = gems + badge.reward;
+        setGems(newTotal);
+        saveGems(newTotal);
+      }
+
+      AudioManager.playSound('success');
+      setAchievements(AchievementsManager.getBadges()); // Refresh UI
+      // Auto-hide popup after 4s
+      setTimeout(() => setNewBadge(null), 4000);
+    }
+  };
+
   const handleToggleMute = async () => {
     const muted = await AudioManager.toggleMute();
     setIsMuted(muted);
   };
+
+  const handleEasterEgg = async (eggId) => {
+    const newUnlocks = await AchievementsManager.unlockEasterEgg(eggId);
+    if (newUnlocks.length > 0) {
+      const badge = newUnlocks[0];
+      setNewBadge(badge);
+
+      // Award Gems
+      if (badge.reward) {
+        const newTotal = gems + badge.reward;
+        setGems(newTotal);
+        saveGems(newTotal);
+      }
+
+      AudioManager.playSound('success');
+      setAchievements(AchievementsManager.getBadges());
+      setTimeout(() => setNewBadge(null), 4000);
+    }
+  };
+
+  // Easter Egg Triggers
+  const [titleTapCount, setTitleTapCount] = useState(0);
+  const handleTitleTap = () => {
+    setTitleTapCount(prev => prev + 1);
+    if (titleTapCount + 1 === 3) {
+      handleEasterEgg('title_tapper');
+
+      // Legacy AntiGravity Effect (Fun!)
+      setIsAntiGravity(true);
+      gravityOffset.value = withRepeat(
+        withSequence(
+          withTiming(-30, { duration: 1500, easing: Easing.inOut(Easing.quad) }),
+          withTiming(30, { duration: 1500, easing: Easing.inOut(Easing.quad) })
+        ),
+        -1,
+        true
+      );
+
+      AudioManager.playSound('pop'); // Feedback
+      setTitleTapCount(0);
+    }
+    // Reset after delay
+    setTimeout(() => setTitleTapCount(0), 1000);
+  };
+
+  const [gemTapCount, setGemTapCount] = useState(0);
+  const handleGemTap = () => {
+    setGemTapCount(prev => prev + 1);
+    if (gemTapCount + 1 === 3) {
+      handleEasterEgg('gem_lover');
+      AudioManager.playSound('unlock');
+      setGemTapCount(0);
+    }
+    setTimeout(() => setGemTapCount(0), 1000);
+  };
+
 
 
 
@@ -285,6 +370,7 @@ export default function App() {
       // Reset after triggering (or if already triggered, just reset cycle)
       setPetCount(0);
     }
+    checkUnlock('petsGiven', 1);
   };
 
 
@@ -304,7 +390,7 @@ export default function App() {
           { text: "Cancel", style: "cancel" },
           {
             text: "Unlock!",
-            onPress: () => {
+            onPress: async () => {
               const newGemCount = gems - animal.cost;
 
               setUnlockedAnimals(prev => {
@@ -313,9 +399,11 @@ export default function App() {
                 return newUnlocked;
               });
 
-              saveGems(newGemCount);
+              await saveGems(newGemCount);
               AudioManager.playSound('unlock');
               Alert.alert("Unlocked!", `${animal.id} joined the party!`);
+              checkUnlock('unlockedAnimals', 1);
+              checkUnlock('gemsSpent', animal.cost);
             }
           }
         ]
@@ -334,7 +422,7 @@ export default function App() {
           { text: "Cancel", style: "cancel" },
           {
             text: "Unlock!",
-            onPress: () => {
+            onPress: async () => {
               const newGemCount = gems - item.cost;
 
               setUnlockedAccessories(prev => {
@@ -343,9 +431,11 @@ export default function App() {
                 return newUnlocked;
               });
 
-              saveGems(newGemCount);
+              await saveGems(newGemCount);
               AudioManager.playSound('unlock');
               Alert.alert("Unlocked!", "New style added to your wardrobe!");
+              checkUnlock('unlockedAccessories', 1);
+              checkUnlock('gemsSpent', item.cost);
             }
           }
         ]
@@ -367,6 +457,7 @@ export default function App() {
 
       AudioManager.playSound('success');
       Alert.alert("🐺 Awooo!", "You found the Creator's Gift! (+10 Gems)");
+      checkUnlock('creatorReward', 1);
     }
   };
 
@@ -383,6 +474,7 @@ export default function App() {
         newMilestones.push('zoo_keeper');
         milestonesChanged = true;
         Alert.alert("Zoo Keeper Award! 🏆", "You've collected 5 different animals! (+5 Gems)");
+        checkUnlock('zooKeeper', 1);
       }
     }
 
@@ -412,39 +504,11 @@ export default function App() {
       setMilestones(newMilestones);
       AsyncStorage.setItem('@dress_it_up_milestones', JSON.stringify(newMilestones));
       Alert.alert("Fashionista! ✨", "That's a lot of style! (+1 Gem)");
+      checkUnlock('fashionista', 1);
     }
   };
 
-  const handleTitleTap = () => {
-    const newCount = eggCount + 1;
-    setEggCount(newCount);
-    if (newCount === 7) {
-      setIsAntiGravity(true);
 
-      // REWARD: EASTER EGG (One-time only)
-      if (!milestones.includes('egg_antigravity')) {
-        saveGems(gems + 10);
-
-        const newMilestones = [...milestones, 'egg_antigravity'];
-        setMilestones(newMilestones);
-        AsyncStorage.setItem('@dress_it_up_milestones', JSON.stringify(newMilestones));
-
-        Alert.alert("🪐 ZERO GRAVITY ACTIVATED", "Hold on to your hats! (+10 Gems)");
-      } else {
-        Alert.alert("🪐 ZERO GRAVITY ACTIVATED", "Hold on to your hats!");
-      }
-
-      gravityOffset.value = withRepeat(
-        withSequence(
-          withTiming(-30, { duration: 1500, easing: Easing.inOut(Easing.quad) }),
-          withTiming(30, { duration: 1500, easing: Easing.inOut(Easing.quad) })
-        ),
-        -1,
-        true
-      );
-      setEggCount(0);
-    }
-  };
 
   const floatStyle = useAnimatedStyle(() => {
     return {
@@ -493,12 +557,14 @@ export default function App() {
   const undo = () => {
     if (historyIndex > 0) {
       setHistoryIndex(historyIndex - 1);
+      checkUnlock('undoRedo', 1);
     }
   };
 
   const redo = () => {
     if (historyIndex < history.length - 1) {
       setHistoryIndex(historyIndex + 1);
+      checkUnlock('undoRedo', 1);
     }
   };
 
@@ -525,6 +591,7 @@ export default function App() {
       saveGems(newGems);
       AudioManager.playSound('success');
       Alert.alert("Shared! 📸", "Thanks for showing off your style! (+1 Gem)");
+      checkUnlock('snapshotsShared', 1);
 
     } catch (error) {
       console.error("Snapshot failed", error);
@@ -612,6 +679,7 @@ export default function App() {
     newOutfit[type] = [...items, newItem];
 
     addToHistory(newOutfit, undefined);
+    checkUnlock('accessoriesAdded', 1);
   };
 
   const updateAccessoryTransform = (type, instanceId, x, y, scaleX, scaleY, rotation, shouldDelete) => {
@@ -622,6 +690,7 @@ export default function App() {
     if (shouldDelete) {
       newOutfit[type] = newOutfit[type].filter(item => item.instanceId !== instanceId);
       addToHistory(newOutfit, undefined);
+      checkUnlock('accessoriesRemoved', 1);
       return;
     }
 
@@ -693,6 +762,10 @@ export default function App() {
         setIsSaveModalVisible(false);
         return true;
       }
+      if (showUserProfile) {
+        setShowUserProfile(false);
+        return true;
+      }
       if (currentScreen === 'dressup') {
         return handleExitDressUp();
       }
@@ -700,7 +773,7 @@ export default function App() {
     };
     const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
     return () => backHandler.remove();
-  }, [currentScreen, isAboutVisible, isSaveModalVisible, historyIndex, lastSavedIndex, isGemsInfoVisible]); // Dependencies updated for closure access
+  }, [currentScreen, isAboutVisible, isSaveModalVisible, historyIndex, lastSavedIndex, isGemsInfoVisible, showUserProfile]); // Dependencies updated for closure access
 
   const animalDragGesture = Gesture.Pan()
     .onStart(() => {
@@ -723,6 +796,7 @@ export default function App() {
   const setBackground = (source, id) => {
     console.log('[App] setBackground', { id, sourceExists: !!source });
     addToHistory(undefined, source);
+    checkUnlock('backgroundsChanged', 1);
   };
 
   // Debug Render
@@ -750,7 +824,10 @@ export default function App() {
         { text: "Cancel", style: "cancel" },
         {
           text: "Yes",
-          onPress: () => addToHistory({ hat: [], glasses: [], jewelry: [], neckwear: [], top: [], bottoms: [], shoes: [] }, null),
+          onPress: () => {
+            addToHistory({ hat: [], glasses: [], jewelry: [], neckwear: [], top: [], bottoms: [], shoes: [] }, null);
+            checkUnlock('outfitsReset', 1);
+          },
           style: "destructive"
         }
       ]
@@ -782,6 +859,7 @@ export default function App() {
             if (currentOutfitId === outfitId) {
               setCurrentOutfitId(null);
             }
+            checkUnlock('outfitsDeleted', 1);
           }
         }
       ]
@@ -853,6 +931,7 @@ export default function App() {
     } else {
       Alert.alert("Saved!", "Outfit saved successfully!"); // Simple feedback
     }
+    checkUnlock('savedOutfits', 1);
   };
 
   const handleLoadOutfit = (savedOutfit) => {
@@ -870,6 +949,7 @@ export default function App() {
     animalStartContext.value = { x: savedOutfit.x || 0, y: savedOutfit.y || 0 };
 
     setCurrentScreen('dressup');
+    checkUnlock('outfitsLoaded', 1);
   };
 
   const handleDressUpPress = () => {
@@ -995,6 +1075,7 @@ export default function App() {
 
       alertTitle = "🤖 SECRET FOUND!";
       alertMessage = "You found the AI Designer! (+5 Gems)\nI picked 5 random items for you!";
+      checkUnlock('aiDesigner', 1);
     }
 
     Alert.alert(alertTitle, alertMessage);
@@ -1019,21 +1100,18 @@ export default function App() {
             </TouchableOpacity>
 
             {/* GEM COUNTER */}
-            <TouchableOpacity
-              style={styles.gemContainer}
-              onPress={() => setIsGemsInfoVisible(true)}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.gemText}>💎 {gems}</Text>
+            <TouchableOpacity style={styles.gemContainer} onPress={handleGemTap}>
+              <View style={styles.gemInner}>
+                <Text style={styles.gemText}>💎 {gems}</Text>
+              </View>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.muteButtonSelection}
-              onPress={handleToggleMute}
-            >
-              <Text style={styles.iconText}>{isMuted ? '🔇' : '🔊'}</Text>
+            <TouchableOpacity style={styles.userProfileButton} onPress={() => {
+              setAchievements(AchievementsManager.getBadges());
+              setShowUserProfile(true);
+            }}>
+              <Ionicons name="person" size={28} color="#444" />
             </TouchableOpacity>
-
 
 
 
@@ -1343,6 +1421,26 @@ export default function App() {
         <StatusBar style="light" />
 
         {/* SAVE MODAL */}
+        {/* NEW BADGE POPUP */}
+        {newBadge && (
+          <View style={styles.badgePopup}>
+            <Text style={styles.badgePopupTitle}>🎉 Badge Unlocked! 🎉</Text>
+            <Text style={styles.badgePopupIcon}>{newBadge.icon}</Text>
+            <Text style={styles.badgePopupName}>{newBadge.title}</Text>
+            {newBadge.reward && <Text style={styles.badgePopupReward}>+{newBadge.reward} Gems! 💎</Text>}
+          </View>
+        )}
+
+        {/* USER PROFILE MODAL */}
+        <UserProfileModal
+          visible={showUserProfile}
+          onClose={() => setShowUserProfile(false)}
+          isMuted={isMuted}
+          onToggleMute={handleToggleMute}
+          achievements={achievements}
+          onUnlockCreatorReward={handleCreatorReward}
+        />
+
         <SaveModal
           visible={isSaveModalVisible}
           onClose={() => { requestAnimationFrame(() => setIsSaveModalVisible(false)); setPendingExit(false); }}
@@ -1622,6 +1720,8 @@ const styles = StyleSheet.create({
     padding: 10,
     backgroundColor: 'rgba(255,255,255,0.3)',
     borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.5)',
   },
   muteButtonDressup: {
     position: 'absolute',
@@ -1640,4 +1740,59 @@ const styles = StyleSheet.create({
     zIndex: 100,
   },
 
+
+  // Achievements Styles
+  userProfileButton: {
+    position: 'absolute',
+    top: 50,
+    left: I18nManager.isRTL ? undefined : 20,
+    right: I18nManager.isRTL ? 20 : undefined,
+    zIndex: 1001,
+    width: 44, // Standard touch target
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255,255,255,0.9)', // High visibility
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    borderWidth: 2,
+    borderColor: '#fff',
+  },
+  badgePopup: {
+    position: 'absolute',
+    top: '20%',
+    alignSelf: 'center',
+    backgroundColor: 'rgba(0,0,0,0.9)',
+    padding: 20,
+    borderRadius: 20,
+    alignItems: 'center',
+    zIndex: 2000,
+    borderWidth: 2,
+    borderColor: '#FFD700',
+  },
+  badgePopupTitle: {
+    color: '#FFD700',
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  badgePopupIcon: {
+    fontSize: 50,
+    marginBottom: 10,
+  },
+  badgePopupName: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  badgePopupReward: {
+    color: '#00ff00',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginTop: 5,
+  },
 });

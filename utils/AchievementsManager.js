@@ -10,20 +10,39 @@ export const BADGES = [
         description: 'Save your first outfit.',
         icon: '👗', // Or a local image require()
         condition: (stats) => stats.savedOutfits >= 1,
+        reward: 1,
     },
     {
         id: 'fashionista',
         title: 'Fashionista',
-        description: 'Save 5 outfits.',
+        description: 'Save 10 outfits.',
         icon: '👒',
-        condition: (stats) => stats.savedOutfits >= 5,
+        condition: (stats) => stats.savedOutfits >= 10,
+        reward: 2,
+    },
+    {
+        id: 'photographer',
+        title: 'Photographer',
+        description: 'Share 10 snapshots.',
+        icon: '📸',
+        condition: (stats) => stats.snapshotsShared >= 10,
+        reward: 5,
+    },
+    {
+        id: 'easter_egg_hunter',
+        title: 'Easter Egg Hunter',
+        description: 'Uncover 3 secrets.',
+        icon: '🕵️',
+        condition: (stats) => stats.easterEggsFound >= 3,
+        reward: 3,
     },
     {
         id: 'animal_lover',
         title: 'Animal Lover',
-        description: 'Unlock 3 animals.',
+        description: 'Unlock 10 animals.',
         icon: '🐾',
-        condition: (stats) => stats.unlockedAnimals >= 3,
+        condition: (stats) => stats.unlockedAnimals >= 10,
+        reward: 10,
     },
     {
         id: 'big_spender',
@@ -31,14 +50,9 @@ export const BADGES = [
         description: 'Spend 50 gems.',
         icon: '💎',
         condition: (stats) => stats.gemsSpent >= 50,
+        reward: 10,
     },
-    {
-        id: 'photographer',
-        title: 'Photographer',
-        description: 'Share a snapshot.',
-        icon: '📸',
-        condition: (stats) => stats.snapshotsShared >= 1,
-    },
+
 ];
 
 class AchievementsManager {
@@ -48,6 +62,8 @@ class AchievementsManager {
             unlockedAnimals: 0,
             gemsSpent: 0,
             snapshotsShared: 0,
+            easterEggsFound: 0,
+            foundEasterEggIds: [],
         };
         this.unlockedBadges = [];
         this.isLoaded = false;
@@ -74,6 +90,17 @@ class AchievementsManager {
         this.stats[statName] += amount;
         await this.saveStats();
         return this.checkNewUnlocks();
+    }
+
+    async unlockEasterEgg(eggId) {
+        if (!this.stats.foundEasterEggIds) {
+            this.stats.foundEasterEggIds = [];
+        }
+        if (this.stats.foundEasterEggIds.includes(eggId)) {
+            return []; // Already found this one
+        }
+        this.stats.foundEasterEggIds.push(eggId);
+        return await this.incrementStat('easterEggsFound', 1);
     }
 
     async setStat(statName, value) {

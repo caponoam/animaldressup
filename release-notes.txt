@@ -1,3 +1,10 @@
+v2.0.0
+- User Profile: A new home for your Settings & Achievements!
+- Badges: Earn trophies for your fashion skills! 🏆
+- Audio: Enjoy background music & sound effects (Toggle in Profile) 🎵
+- Easter Eggs: Can you find all the secrets? 🥚
+- UI Polish: Cleaner menus and better help instructions.
+
 v1.8.5
 - Optimization: Reduced download size (Optimized underwater background asset)
 

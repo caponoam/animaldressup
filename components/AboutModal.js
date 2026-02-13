@@ -1,25 +1,7 @@
-import React, { useRef } from 'react';
-import { View, Text, TouchableOpacity, Modal, StyleSheet, Pressable } from 'react-native';
-import packageJson from '../package.json';
+import React from 'react';
+import { View, Text, TouchableOpacity, Modal, StyleSheet } from 'react-native';
 
-export default function AboutModal({ visible, onClose, onUnlockCreatorReward }) {
-    const timerRef = useRef(null);
-
-    const handlePressIn = () => {
-        timerRef.current = setTimeout(() => {
-            if (onUnlockCreatorReward) {
-                onUnlockCreatorReward();
-            }
-        }, 10000); // 10 seconds
-    };
-
-    const handlePressOut = () => {
-        if (timerRef.current) {
-            clearTimeout(timerRef.current);
-            timerRef.current = null;
-        }
-    };
-
+export default function AboutModal({ visible, onClose }) {
     return (
         <Modal
             animationType="fade"
@@ -30,18 +12,6 @@ export default function AboutModal({ visible, onClose, onUnlockCreatorReward }) 
             <View style={styles.modalOverlay}>
                 <View style={styles.aboutCard}>
                     <Text style={styles.aboutTitle}>Dress It Up! 🐻</Text>
-                    <Text style={styles.aboutVersion}>v{packageJson.version}</Text>
-
-                    <Text style={styles.aboutSection}>Created by:</Text>
-                    <Pressable
-                        onPressIn={handlePressIn}
-                        onPressOut={handlePressOut}
-                        style={({ pressed }) => [
-                            pressed && { opacity: 0.7 }
-                        ]}
-                    >
-                        <Text style={styles.aboutText}>Uma Wolf</Text>
-                    </Pressable>
 
                     <Text style={styles.aboutSection}>How to Play:</Text>
                     <View style={styles.instructionRow}>
@@ -59,6 +29,22 @@ export default function AboutModal({ visible, onClose, onUnlockCreatorReward }) 
                     <View style={styles.instructionRow}>
                         <Text style={styles.iconText}>📸</Text>
                         <Text style={styles.instructionText}>Share your creation!</Text>
+                    </View>
+                    <View style={styles.instructionRow}>
+                        <Text style={styles.iconText}>🔄</Text>
+                        <Text style={styles.instructionText}>Tap an item to Flip/Mirror it</Text>
+                    </View>
+                    <View style={styles.instructionRow}>
+                        <View style={[styles.miniButton, { backgroundColor: '#4D96FF', borderColor: '#1565C0' }]}>
+                            <Text style={styles.miniButtonText}>💾</Text>
+                        </View>
+                        <Text style={styles.instructionText}>Save your favorite outfits!</Text>
+                    </View>
+                    <View style={styles.instructionRow}>
+                        <View style={[styles.miniButton, { backgroundColor: '#FFD93D', borderColor: '#FBC02D' }]}>
+                            <Text style={styles.miniButtonText}>↶</Text>
+                        </View>
+                        <Text style={styles.instructionText}>Click to Undo actions</Text>
                     </View>
 
                     <TouchableOpacity
@@ -96,11 +82,6 @@ const styles = StyleSheet.create({
         fontSize: 32,
         fontWeight: '900',
         color: '#FF6B6B',
-        marginBottom: 5,
-    },
-    aboutVersion: {
-        fontSize: 16,
-        color: '#999',
         marginBottom: 20,
     },
     aboutSection: {
@@ -108,15 +89,7 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         alignSelf: 'flex-start',
         marginBottom: 10,
-        marginTop: 10,
         color: '#333',
-    },
-    aboutText: {
-        fontSize: 16,
-        color: '#666',
-        alignSelf: 'flex-start',
-        marginBottom: 5,
-        marginLeft: 10,
     },
     instructionRow: {
         flexDirection: 'row',
@@ -147,5 +120,19 @@ const styles = StyleSheet.create({
         color: 'white',
         fontSize: 18,
         fontWeight: 'bold',
+    },
+    miniButton: {
+        width: 30,
+        height: 30,
+        borderRadius: 15,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderBottomWidth: 2,
+        marginRight: 10,
+    },
+    miniButtonText: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: 'white',
     },
 });
