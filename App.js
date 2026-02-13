@@ -18,6 +18,7 @@ import SaveModal from './components/SaveModal';
 import AboutModal from './components/AboutModal';
 import SavedOutfitsList from './components/SavedOutfitsList';
 import GemsInfoModal from './components/GemsInfoModal';
+import AudioManager from './utils/AudioManager';
 
 // DATA DEFINITIONS
 import { BASE_ANIMALS } from './data/animals';
@@ -57,6 +58,7 @@ export default function App() {
   const [gems, setGems] = useState(0); // Gems Currency 💎
   const [isAntiGravity, setIsAntiGravity] = useState(false); // ANIMATION SHARED VALUES
   const gravityOffset = useSharedValue(0);
+  const [isMuted, setIsMuted] = useState(true);
 
   // STORAGE KEY
   const STORAGE_KEY = '@dress_it_up_outfits_v1';
@@ -80,6 +82,15 @@ export default function App() {
         console.log("Error initializing update check:", e);
       }
     }
+  }, []);
+
+  // AUDIO INIT
+  useEffect(() => {
+    const initAudio = async () => {
+      await AudioManager.init();
+      await AudioManager.playBackgroundMusic();
+    };
+    initAudio();
   }, []);
 
   // HARDWARE BACK BUTTON HANDLER
@@ -249,6 +260,13 @@ export default function App() {
     return false;
   };
 
+  const handleToggleMute = async () => {
+    const muted = await AudioManager.toggleMute();
+    setIsMuted(muted);
+  };
+
+
+
   const handlePetAnimal = () => {
     const newCount = petCount + 1;
     setPetCount(newCount);
@@ -296,6 +314,7 @@ export default function App() {
               });
 
               saveGems(newGemCount);
+              AudioManager.playSound('unlock');
               Alert.alert("Unlocked!", `${animal.id} joined the party!`);
             }
           }
@@ -325,6 +344,7 @@ export default function App() {
               });
 
               saveGems(newGemCount);
+              AudioManager.playSound('unlock');
               Alert.alert("Unlocked!", "New style added to your wardrobe!");
             }
           }
@@ -345,6 +365,7 @@ export default function App() {
       setMilestones(newMilestones);
       AsyncStorage.setItem('@dress_it_up_milestones', JSON.stringify(newMilestones));
 
+      AudioManager.playSound('success');
       Alert.alert("🐺 Awooo!", "You found the Creator's Gift! (+10 Gems)");
     }
   };
@@ -502,6 +523,7 @@ export default function App() {
       // REWARD: SHARE (+1 Gem) 💎
       const newGems = gems + 1;
       saveGems(newGems);
+      AudioManager.playSound('success');
       Alert.alert("Shared! 📸", "Thanks for showing off your style! (+1 Gem)");
 
     } catch (error) {
@@ -554,6 +576,7 @@ export default function App() {
   };
 
   const toggleAccessory = (type, source, itemId, dropCoords) => {
+    AudioManager.playSound('pop');
     const newOutfit = { ...currentOutfit };
     const items = newOutfit[type] || [];
 
@@ -1004,6 +1027,15 @@ export default function App() {
               <Text style={styles.gemText}>💎 {gems}</Text>
             </TouchableOpacity>
 
+            <TouchableOpacity
+              style={styles.muteButtonSelection}
+              onPress={handleToggleMute}
+            >
+              <Text style={styles.iconText}>{isMuted ? '🔇' : '🔊'}</Text>
+            </TouchableOpacity>
+
+
+
 
 
             <View style={styles.previewContainer}>
@@ -1026,6 +1058,7 @@ export default function App() {
                 unlockedAnimals={unlockedAnimals}
                 onUnlock={(animal) => handleUnlockAnimal(animal)}
                 onSelectAnimal={(animal) => {
+                  AudioManager.playSound('pop');
                   checkSugarGliderTap(animal.id);
                   checkWolfTap(animal.id);
                   console.log('[App] Resetting outfit for selected animal:', animal.id);
@@ -1295,6 +1328,15 @@ export default function App() {
             >
               <Text style={styles.aboutButtonText}>?</Text>
             </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.muteButtonDressup}
+              onPress={handleToggleMute}
+            >
+              <Text style={styles.aboutButtonText}>{isMuted ? '🔇' : '🔊'}</Text>
+            </TouchableOpacity>
+
+
           </View>
         )}
 
@@ -1571,4 +1613,31 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: 'white',
   },
+  muteButtonSelection: {
+    position: 'absolute',
+    top: 50,
+    left: I18nManager.isRTL ? undefined : 20,
+    right: I18nManager.isRTL ? 20 : undefined,
+    zIndex: 1001,
+    padding: 10,
+    backgroundColor: 'rgba(255,255,255,0.3)',
+    borderRadius: 20,
+  },
+  muteButtonDressup: {
+    position: 'absolute',
+    bottom: 40,
+    right: I18nManager.isRTL ? undefined : 30,
+    left: I18nManager.isRTL ? 30 : undefined,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.8)',
+    borderColor: 'rgba(255,255,255,0.8)',
+    zIndex: 100,
+  },
+
 });

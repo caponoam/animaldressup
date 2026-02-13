@@ -1,4 +1,4 @@
-
+[Feature] Badges for achievements (number of saves, animals, easter eggs, shares, etc)
 
 New animals: Panda, hedgehog, porcupine, seal, kangaroo
 New accessories: 

@@ -8,7 +8,7 @@ export const backgrounds = [
     { id: 'beach', source: require('../assets/backgrounds/beach.png'), name: 'Beach', locked: true, cost: 2 },
     { id: 'rainforest', source: require('../assets/backgrounds/rainforest.png'), name: 'Rainforest', locked: true, cost: 2 },
     { id: 'dojo', source: require('../assets/backgrounds/dojo.png'), name: 'Dojo', locked: true, cost: 2 },
-    { id: 'underwater', source: require('../assets/backgrounds/underwater.png'), name: 'Underwater', locked: true, cost: 2 },
+    { id: 'underwater', source: require('../assets/backgrounds/under_water.png'), name: 'Underwater', locked: true, cost: 2 },
     { id: 'none', source: null, name: 'None' },
 ];
 
