@@ -62,9 +62,11 @@ export default function App() {
   const [isAntiGravity, setIsAntiGravity] = useState(false); // ANIMATION SHARED VALUES
   const gravityOffset = useSharedValue(0);
   const [isMuted, setIsMuted] = useState(true);
+
   const [showUserProfile, setShowUserProfile] = useState(false);
   const [achievements, setAchievements] = useState([]);
   const [newBadge, setNewBadge] = useState(null);
+  const [showStory, setShowStory] = useState(false);
 
   // STORAGE KEY
   const STORAGE_KEY = '@dress_it_up_outfits_v1';
@@ -338,15 +340,10 @@ export default function App() {
     setTimeout(() => setTitleTapCount(0), 1000);
   };
 
-  const [gemTapCount, setGemTapCount] = useState(0);
+
   const handleGemTap = () => {
-    setGemTapCount(prev => prev + 1);
-    if (gemTapCount + 1 === 3) {
-      handleEasterEgg('gem_lover');
-      AudioManager.playSound('unlock');
-      setGemTapCount(0);
-    }
-    setTimeout(() => setGemTapCount(0), 1000);
+    handleEasterEgg('gem_lover');
+    AudioManager.playSound('unlock');
   };
 
 
@@ -1100,7 +1097,13 @@ export default function App() {
             </TouchableOpacity>
 
             {/* GEM COUNTER */}
-            <TouchableOpacity style={styles.gemContainer} onPress={handleGemTap}>
+            {/* GEM COUNTER */}
+            <TouchableOpacity
+              style={styles.gemContainer}
+              onPress={() => setIsGemsInfoVisible(true)}
+              onLongPress={handleGemTap}
+              delayLongPress={2000}
+            >
               <View style={styles.gemInner}>
                 <Text style={styles.gemText}>💎 {gems}</Text>
               </View>
@@ -1118,11 +1121,57 @@ export default function App() {
 
             <View style={styles.previewContainer}>
               {selectedAnimal ? (
-                <TouchableOpacity onPress={handlePetAnimal} activeOpacity={0.9}>
-                  <Animated.View style={[styles.cardGlow, floatStyle]}>
-                    <Image source={selectedAnimal} style={styles.previewImage} />
-                  </Animated.View>
-                </TouchableOpacity>
+                <View style={{ alignItems: 'center' }}>
+                  <TouchableOpacity onPress={handlePetAnimal} activeOpacity={0.9}>
+                    <Animated.View style={[styles.cardGlow, floatStyle]}>
+                      {showStory ? (
+                        <View style={{ padding: 20, alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                          <Text style={{ fontSize: 18, color: '#555', textAlign: 'center', lineHeight: 24, fontStyle: 'italic' }}>
+                            {BASE_ANIMALS.find(a => a.id === selectedAnimalId)?.story || "No story yet!"}
+                          </Text>
+                        </View>
+                      ) : (
+                        <Image source={selectedAnimal} style={[styles.previewImage, { marginBottom: 30 }]} />
+                      )}
+
+                      {!showStory && (
+                        <Text style={{
+                          position: 'absolute',
+                          bottom: 20,
+                          fontSize: 24,
+                          fontWeight: 'bold',
+                          color: '#444',
+                          letterSpacing: 1,
+                        }}>
+                          {BASE_ANIMALS.find(a => a.id === selectedAnimalId)?.name || ''}
+                        </Text>
+                      )}
+                    </Animated.View>
+                  </TouchableOpacity>
+
+                  {/* STORY TOGGLE BUTTON */}
+                  <TouchableOpacity
+                    style={{
+                      position: 'absolute',
+                      top: 10,
+                      right: 10,
+                      backgroundColor: 'rgba(255,255,255,0.9)',
+                      padding: 8,
+                      borderRadius: 20,
+                      elevation: 5,
+                      shadowColor: '#000',
+                      shadowOffset: { width: 0, height: 2 },
+                      shadowOpacity: 0.2,
+                      shadowRadius: 4,
+                    }}
+                    onPress={() => {
+                      AudioManager.playSound('pop');
+                      setShowStory(!showStory);
+                    }}
+                  >
+                    <Text style={{ fontSize: 20 }}>{showStory ? '↩️' : '📖'}</Text>
+                  </TouchableOpacity>
+                </View>
               ) : (
                 <View style={styles.placeholderBox}>
                   <Text style={styles.placeholderText}>?</Text>
@@ -1146,6 +1195,7 @@ export default function App() {
                   setCurrentOutfitId(null);
                   setSelectedAnimal(animal.source);
                   setSelectedAnimalId(animal.id);
+                  setShowStory(false);
                   // Reset Position
                   animalX.value = 0;
                   animalY.value = 0;

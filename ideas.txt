@@ -1,7 +1,6 @@
-[Feature] Badges for achievements (number of saves, animals, easter eggs, shares, etc)
 
 New animals: Panda, hedgehog, porcupine, seal, kangaroo
-New accessories: 
+New accessories: bucket hat,           
 
 Fit the accessories, clothes, etc better to the animal better    
 apply clothes and accessories to the animal properly 
@@ -9,7 +8,7 @@ apply clothes and accessories to the animal properly
 Drawers can't hide each other
 
 backgrounds: Underwater 
-Bottoms: mermaid tail
+Bottoms:  spiral skirt
 Tops: Trench coat
 Glasses: magnifying glass
 
@@ -58,7 +57,9 @@ Fix trash issue/hot spot
 Gems (in app currency)
 Gem "jar"
 
+[Feature] Badges for achievements (number of saves, animals, easter eggs, shares, etc)
 
+[Bug] Gems button on main page isn't working.
 
 ********************************************************************************
 ==================================== PROMPTS =================================

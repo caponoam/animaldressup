@@ -20,6 +20,7 @@ export const hats = [
     { id: 'top_hat', type: 'hat', source: require('../assets/clothes/hats/top_hat.png'), name: 'Top Hat' },
     { id: 'monopoly_hat', type: 'hat', source: require('../assets/clothes/hats/monopoly_hat.png'), name: 'Monopoly', locked: true, cost: 2 },
     { id: 'kings_crown', type: 'hat', source: require('../assets/clothes/hats/kings_crown.png'), name: 'Crown', locked: true, cost: 2 },
+    { id: 'pink_bucket_hat', type: 'hat', source: require('../assets/clothes/hats/pink_bucket_hat.png'), name: 'Bucket Hat', locked: true, cost: 2 },
 ];
 
 export const glasses = [
@@ -61,6 +62,7 @@ export const bottoms = [
     { id: 'tutu_pink', type: 'bottoms', source: require('../assets/clothes/bottoms/tutu.png'), name: 'Tutu', locked: true, cost: 1 },
     { id: 'hawaiian_yahenda', type: 'bottoms', source: require('../assets/clothes/bottoms/hawaiian_yahenda.png'), name: "Pa'u", locked: true, cost: 2 },
     { id: 'jean_skirt', type: 'bottoms', source: require('../assets/clothes/bottoms/jean-skirt.png'), name: 'Jean Skirt', locked: true, cost: 2 },
+    { id: 'spiral_skirt', type: 'bottoms', source: require('../assets/clothes/bottoms/spiral_skirt.png'), name: 'Spiral Skirt' },
     { id: 'mermaid_tail', type: 'bottoms', source: require('../assets/clothes/bottoms/mermaid_tail.png'), name: 'Mermaid Tail', locked: true, cost: 2 },
 ];
 

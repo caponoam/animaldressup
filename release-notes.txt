@@ -1,3 +1,9 @@
+v2.1.0
+- Animal Names: See who's who directly on the main screen! 🏷️
+- Backstories: Tap the book icon 📖 to read a fun story about each animal friend.
+- New Items: Pink Bucket Hat 👒 & Spiral Skirt 🌀
+- Improvements: Better contrast for easier reading.
+
 v2.0.0
 - User Profile: A new home for your Settings & Achievements!
 - Badges: Earn trophies for your fashion skills! 🏆
