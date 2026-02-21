@@ -21,6 +21,7 @@ export const hats = [
     { id: 'monopoly_hat', type: 'hat', source: require('../assets/clothes/hats/monopoly_hat.png'), name: 'Monopoly', locked: true, cost: 2 },
     { id: 'kings_crown', type: 'hat', source: require('../assets/clothes/hats/kings_crown.png'), name: 'Crown', locked: true, cost: 2 },
     { id: 'pink_bucket_hat', type: 'hat', source: require('../assets/clothes/hats/pink_bucket_hat.png'), name: 'Bucket Hat', locked: true, cost: 2 },
+    { id: 'olive_green_helmet', type: 'hat', source: require('../assets/clothes/hats/olive_green_helmet.png'), name: 'Helmet', locked: true, cost: 3 },
 ];
 
 export const glasses = [
@@ -29,6 +30,7 @@ export const glasses = [
     { id: 'fancy_glasses', type: 'glasses', source: require('../assets/clothes/glasses/fancy_glasses.png'), name: 'Fancy Glasses' },
     { id: 'wrap_around_glasses', type: 'glasses', source: require('../assets/clothes/glasses/wrap_around_glasses.png'), name: 'Wrap Around', locked: true, cost: 2 },
     { id: 'groucho_glasses', type: 'glasses', source: require('../assets/clothes/glasses/groucho_glasses.png'), name: 'Disguise', locked: true, cost: 2 },
+    { id: 'purple_heart_glasses', type: 'glasses', source: require('../assets/clothes/glasses/purple_heart_glasses.png'), name: 'Heart Glasses', locked: true, cost: 3 },
 ];
 
 export const jewelry = [
@@ -251,4 +253,8 @@ export const COMPOSITES = {
     'seal_dress_shirt': require('../assets/clothes/tops/seal_dress_shirt_composite.png'),
     'seal_gi': require('../assets/clothes/tops/seal_gi_composite.png'),
 
+    'raccoon_red_shirt': require('../assets/clothes/tops/raccoon_red_shirt_composite.png'),
+    'raccoon_hawaiian_shirt': require('../assets/clothes/tops/raccoon_hawaiian_shirt_composite.png'),
+    'raccoon_dress_shirt': require('../assets/clothes/tops/raccoon_dress_shirt_composite.png'),
+    'raccoon_gi': require('../assets/clothes/tops/raccoon_gi_composite.png'),
 };

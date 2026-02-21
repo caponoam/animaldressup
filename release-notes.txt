@@ -1,3 +1,8 @@
+v2.2.0
+- New Animal: Rocket the Raccoon is here! 🦝
+- New Items: Purple Heart Sunglasses 🕶️ & Olive Green Helmet 🪖
+- Immersion: The Raccoon now actually 'wears' the tops (Red Shirt, Hawaiian Shirt, Dress Shirt, Gi) for a more realistic dress-up experience!
+
 v2.1.0
 - Animal Names: See who's who directly on the main screen! 🏷️
 - Backstories: Tap the book icon 📖 to read a fun story about each animal friend.

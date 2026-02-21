@@ -1,18 +1,19 @@
+Alloww users to save their names in the profile
 
-New animals: Panda, hedgehog, porcupine, seal, kangaroo
-New accessories: bucket hat,           
+New animals: Raccoon, Panda, hedgehog, porcupine, seal, kangaroo
+New accessories: Green helmet          
+
+
+
+backgrounds: Underwater 
+Bottoms:  spiral skirt
+Tops: Trench coat
+Glasses: purple see through heart shapped glasses
 
 Fit the accessories, clothes, etc better to the animal better    
 apply clothes and accessories to the animal properly 
 
 Drawers can't hide each other
-
-backgrounds: Underwater 
-Bottoms:  spiral skirt
-Tops: Trench coat
-Glasses: magnifying glass
-
-
 
 Poses chooser
 
@@ -71,9 +72,15 @@ It should have a friendly expression. The style should match existing flat 2D ve
 Simple shapes, clean lines. No background (transparent).
 
 Composite:
+(V1)
 Combine these two images into a single composite image. The ANIMAL should be wearing the dress shirt. 
 The shirt should fit naturally on the ANIMAL's torso. Maintain the exact art style, resolution, and flat vector aesthetic. 
 The output should be the ANIMAL dressed in the shirt on a transparent background. Make sure the hands are still visible
+
+(V2)
+Combine these two images into a single composite image. The Raccoon should be wearing the dress shirt. Don't hide the hands.
+The shirt should fit naturally on the Raccoon's torso. Maintain the exact art style, resolution, and flat vector aesthetic. 
+The output should be the Raccoon dressed in the shirt on a transparent background.
 
 Accessories:
 A gold chain, isolated on a transparent background, cartoon style, flat vector art, 
