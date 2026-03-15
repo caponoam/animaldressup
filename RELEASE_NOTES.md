@@ -1,4 +1,16 @@
 # Release Notes
+ 
+## Version 2.3.0 - "The Koala Kid" 🐨✨
+ 
+### **New Character**
+*   **Koala Added**: Welcome our new friend, the Koala! A laid-back climber ready for high-fashion adventures.
+*   **Custom Fitting & Overlays**:
+    *   The Koala now has specialized "Fits" for all hats, glasses, and accessories.
+    *   **High-Quality Composites**: Added four custom outfits for the Koala (Red Shirt, Hawaiian Shirt, Dress Shirt, and the Gi) so items wrap perfectly around its unique shape.
+ 
+### **System Improvements**
+*   **Asset Consistency**: Standardized all character and composite assets to 1024x1024 and 800x800 respectively for optimal performance and visual clarity.
+*   **Performance Build**: Upgraded build configurations for a smoother Play Store experience.
 
 ## Version 1.3.0 - "The Big Update" 🐻✨
 

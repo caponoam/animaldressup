@@ -165,6 +165,11 @@ export const ANIMAL_FITS = {
         hat: { y: -130, scale: 0.45 },
         glasses: { y: -50, scale: 0.45 },
     },
+    koala: {
+        torso: { width: 180, height: 180, y: 110 },
+        hat: { y: -140, scale: 0.45 },
+        glasses: { y: -55, scale: 0.4 },
+    },
 };
 
 export const COMPOSITES = {
@@ -257,4 +262,9 @@ export const COMPOSITES = {
     'raccoon_hawaiian_shirt': require('../assets/clothes/tops/raccoon_hawaiian_shirt_composite.png'),
     'raccoon_dress_shirt': require('../assets/clothes/tops/raccoon_dress_shirt_composite.png'),
     'raccoon_gi': require('../assets/clothes/tops/raccoon_gi_composite.png'),
+
+    'koala_red_shirt': require('../assets/clothes/tops/koala_red_shirt_composite.png'),
+    'koala_hawaiian_shirt': require('../assets/clothes/tops/koala_hawaiian_shirt_composite.png'),
+    'koala_dress_shirt': require('../assets/clothes/tops/koala_dress_shirt_composite.png'),
+    'koala_gi': require('../assets/clothes/tops/koala_gi_composite.png'),
 };

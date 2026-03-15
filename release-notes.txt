@@ -1,3 +1,8 @@
+v2.3.0
+- New Animal: Our new Koala friend is here! 🐨
+- High-Fashion Overlays: The Koala now 'wears' the tops (Red Shirt, Hawaiian Shirt, Dress Shirt, Gi) with perfect fitted overlays!
+- Performance Improvements: Faster loading and cleaner assets.
+
 v2.2.0
 - New Animal: Rocket the Raccoon is here! 🦝
 - New Items: Purple Heart Sunglasses 🕶️ & Olive Green Helmet 🪖
