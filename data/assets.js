@@ -9,6 +9,7 @@ export const backgrounds = [
     { id: 'rainforest', source: require('../assets/backgrounds/rainforest.png'), name: 'Rainforest', locked: true, cost: 2 },
     { id: 'dojo', source: require('../assets/backgrounds/dojo.png'), name: 'Dojo', locked: true, cost: 2 },
     { id: 'underwater', source: require('../assets/backgrounds/under_water.png'), name: 'Underwater', locked: true, cost: 2 },
+    { id: 'ancient_egypt', source: require('../assets/backgrounds/ancient_egypt.jpg'), name: 'Ancient Egypt', locked: true, cost: 2 },
     { id: 'none', source: null, name: 'None' },
 ];
 
@@ -22,6 +23,7 @@ export const hats = [
     { id: 'kings_crown', type: 'hat', source: require('../assets/clothes/hats/kings_crown.png'), name: 'Crown', locked: true, cost: 2 },
     { id: 'pink_bucket_hat', type: 'hat', source: require('../assets/clothes/hats/pink_bucket_hat.png'), name: 'Bucket Hat', locked: true, cost: 2 },
     { id: 'olive_green_helmet', type: 'hat', source: require('../assets/clothes/hats/olive_green_helmet.png'), name: 'Helmet', locked: true, cost: 3 },
+
 ];
 
 export const glasses = [
@@ -50,6 +52,7 @@ export const neckwear = [
     { id: 'blue_bandana', type: 'neckwear', source: require('../assets/clothes/neckwear/blue_bandana.png'), name: 'Blue Bandana' },
     { id: 'spiked_collar', type: 'neckwear', source: require('../assets/clothes/neckwear/spiked_collar.png'), name: 'Spiked Collar', locked: true, cost: 2 },
     { id: 'ascot', type: 'neckwear', source: require('../assets/clothes/neckwear/ascot.png'), name: 'Ascot', locked: true, cost: 2 },
+    { id: 'lei', type: 'neckwear', source: require('../assets/clothes/neckwear/lei.png'), name: 'Lei', locked: true, cost: 2 },
 ];
 
 export const tops = [
@@ -170,6 +173,11 @@ export const ANIMAL_FITS = {
         hat: { y: -140, scale: 0.45 },
         glasses: { y: -55, scale: 0.4 },
     },
+    red_panda: {
+        torso: { width: 160, height: 160, y: 110 },
+        hat: { y: -140, scale: 0.45 },
+        glasses: { y: -50, scale: 0.45 },
+    },
 };
 
 export const COMPOSITES = {
@@ -267,4 +275,8 @@ export const COMPOSITES = {
     'koala_hawaiian_shirt': require('../assets/clothes/tops/koala_hawaiian_shirt_composite.png'),
     'koala_dress_shirt': require('../assets/clothes/tops/koala_dress_shirt_composite.png'),
     'koala_gi': require('../assets/clothes/tops/koala_gi_composite.png'),
+    'red_panda_red_shirt': require('../assets/clothes/tops/red_panda_red_shirt_composite.png'),
+    'red_panda_hawaiian_shirt': require('../assets/clothes/tops/red_panda_hawaiian_shirt_composite.png'),
+    'red_panda_dress_shirt': require('../assets/clothes/tops/red_panda_dress_shirt_composite.png'),
+    'red_panda_gi': require('../assets/clothes/tops/red_panda_gi_composite.png'),
 };

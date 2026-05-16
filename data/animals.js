@@ -18,4 +18,5 @@ export const BASE_ANIMALS = [
     { id: 'seal', source: require('../assets/animals/seal.png'), name: 'Seal', locked: true, cost: 5, story: "Puppy of the sea! Loves clapping, balancing balls, and naps on ice floes." },
     { id: 'raccoon', source: require('../assets/animals/raccoon.png'), name: 'Raccoon', locked: true, cost: 5, story: "Ain't no thing like me, except me! A genetically enhanced mastermind with a tiny temper and a big mouth." },
     { id: 'koala', source: require('../assets/animals/koala.png'), name: 'Koala', locked: true, cost: 5, story: "A laid-back climber who loves eucalyptus and extra-long naps. Perfectly content in the trees!" },
+    { id: 'red_panda', source: require('../assets/animals/red_panda.png'), name: 'Red Panda', locked: true, cost: 5, story: "The acrobat of the trees! Loves bamboo, showing off its big fluffy tail, and standing on two legs to look 'scary'." },
 ];

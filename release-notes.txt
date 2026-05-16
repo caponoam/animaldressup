@@ -1,3 +1,8 @@
+v2.4.0
+- New Animal: The Red Panda is here! 🐾
+- High-Fashion Overlays: The Red Panda now 'wears' the tops (Red Shirt, Hawaiian Shirt, Dress Shirt, Gi) with perfect fitted overlays!
+- New Content: Ancient Egypt background and Lei accessory!
+
 v2.3.0
 - New Animal: Our new Koala friend is here! 🐨
 - High-Fashion Overlays: The Koala now 'wears' the tops (Red Shirt, Hawaiian Shirt, Dress Shirt, Gi) with perfect fitted overlays!

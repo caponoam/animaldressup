@@ -1210,7 +1210,7 @@ export default function App() {
               activeOpacity={0.8}
               disabled={!selectedAnimal}
             >
-              <Text style={styles.buttonText}>Dress 'Em Up!</Text>
+              <Text style={styles.buttonText}>{"Dress 'Em Up!"}</Text>
             </TouchableOpacity>
 
             <SavedOutfitsList
@@ -1785,7 +1785,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.8)',
     borderColor: 'rgba(255,255,255,0.8)',
     zIndex: 100,
   },

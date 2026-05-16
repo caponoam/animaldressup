@@ -1,5 +1,19 @@
 # Release Notes
- 
+
+## Version 2.4.0 - "The Red Panda" 🐾✨
+
+### **New Character**
+*   **Red Panda Added**: Welcome our new friend, the Red Panda! The acrobat of the trees is ready for dress-up adventures.
+*   **Custom Fitting & Overlays**:
+    *   The Red Panda now has specialized "Fits" for all hats, glasses, and accessories.
+    *   **High-Quality Composites**: Added four custom outfits for the Red Panda (Red Shirt, Hawaiian Shirt, Dress Shirt, and the Gi).
+
+### **New Content**
+*   **Ancient Egypt Background**: A new desert landscape with pyramids.
+*   **Lei Accessory**: A colorful flower necklace.
+`
+---
+
 ## Version 2.3.0 - "The Koala Kid" 🐨✨
  
 ### **New Character**
