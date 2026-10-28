@@ -178,6 +178,11 @@ export const ANIMAL_FITS = {
         hat: { y: -140, scale: 0.45 },
         glasses: { y: -50, scale: 0.45 },
     },
+    otter: {
+        torso: { width: 165, height: 165, y: 110 },
+        hat: { y: -238, scale: 0.45 },
+        glasses: { y: -92, scale: 0.45 },
+    },
 };
 
 export const COMPOSITES = {
@@ -279,4 +284,8 @@ export const COMPOSITES = {
     'red_panda_hawaiian_shirt': require('../assets/clothes/tops/red_panda_hawaiian_shirt_composite.png'),
     'red_panda_dress_shirt': require('../assets/clothes/tops/red_panda_dress_shirt_composite.png'),
     'red_panda_gi': require('../assets/clothes/tops/red_panda_gi_composite.png'),
+    'otter_red_shirt': require('../assets/clothes/tops/otter_red_shirt_composite.png'),
+    'otter_hawaiian_shirt': require('../assets/clothes/tops/otter_hawaiian_shirt_composite.png'),
+    'otter_dress_shirt': require('../assets/clothes/tops/otter_dress_shirt_composite.png'),
+    'otter_gi': require('../assets/clothes/tops/otter_gi_composite.png'),
 };
