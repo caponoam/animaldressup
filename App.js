@@ -1570,15 +1570,6 @@ export default function App() {
         <StatusBar style="light" />
 
         {/* SAVE MODAL */}
-        {/* NEW BADGE POPUP */}
-        {newBadge && (
-          <View style={styles.badgePopup}>
-            <Text style={styles.badgePopupTitle}>🎉 Badge Unlocked! 🎉</Text>
-            <Text style={styles.badgePopupIcon}>{newBadge.icon}</Text>
-            <Text style={styles.badgePopupName}>{newBadge.title}</Text>
-            {newBadge.reward && <Text style={styles.badgePopupReward}>+{newBadge.reward} Gems! 💎</Text>}
-          </View>
-        )}
 
         {/* USER PROFILE MODAL */}
         <UserProfileModal
@@ -1624,6 +1615,30 @@ export default function App() {
           visible={isGemsInfoVisible}
           onClose={() => setIsGemsInfoVisible(false)}
         />
+
+        {/* REWARD POPUP — last in tree & its own Modal so it floats above every other Modal */}
+        <Modal visible={!!newBadge} transparent animationType="fade" statusBarTranslucent onRequestClose={() => setNewBadge(null)}>
+          {newBadge ? (
+            <View style={styles.badgeOverlay}>
+              <TouchableOpacity activeOpacity={1} onPress={() => setNewBadge(null)}>
+                <View style={styles.badgePopup}>
+                  <Text style={styles.badgePopupTitle}>
+                    {newBadge.icon === '🎁' ? '🎁 Daily Gift!' : newBadge.icon === '🔥' ? '🔥 Streak Up!' : '🎉 Badge Unlocked! 🎉'}
+                  </Text>
+                  {newBadge.icon !== '🎁' && newBadge.icon !== '🔥' && (
+                    <Text style={styles.badgePopupIcon}>{newBadge.icon}</Text>
+                  )}
+                  {newBadge.title && (
+                    <Text style={styles.badgePopupName}>{newBadge.title}</Text>
+                  )}
+                  {newBadge.reward && (
+                    <Text style={styles.badgePopupReward}>+{newBadge.reward} Gems! 💎</Text>
+                  )}
+                </View>
+              </TouchableOpacity>
+            </View>
+          ) : null}
+        </Modal>
 
       </LinearGradient >
     </GestureHandlerRootView >
@@ -1954,15 +1969,18 @@ const styles = StyleSheet.create({
     height: 34,
     borderRadius: 17,
   },
+  badgeOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.35)',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    paddingTop: '22%',
+  },
   badgePopup: {
-    position: 'absolute',
-    top: '20%',
-    alignSelf: 'center',
     backgroundColor: 'rgba(0,0,0,0.9)',
     padding: 20,
     borderRadius: 20,
     alignItems: 'center',
-    zIndex: 2000,
     borderWidth: 2,
     borderColor: '#FFD700',
   },
