@@ -64,6 +64,13 @@ export default function App() {
   const [isMuted, setIsMuted] = useState(true);
 
   const [showUserProfile, setShowUserProfile] = useState(false);
+  const [profile, setProfile] = useState({ name: '', avatar: '' }); // local-only, never leaves device
+
+  const handleSaveProfile = (next) => {
+    const clean = { name: (next.name || '').slice(0, 14), avatar: next.avatar || '' };
+    setProfile(clean);
+    AsyncStorage.setItem('@dress_it_up_profile', JSON.stringify(clean));
+  };
   const [achievements, setAchievements] = useState([]);
   const [newBadge, setNewBadge] = useState(null);
   const [showStory, setShowStory] = useState(false);
@@ -151,6 +158,15 @@ export default function App() {
         const savedMilestones = await AsyncStorage.getItem('@dress_it_up_milestones');
         if (savedMilestones !== null) {
           setMilestones(JSON.parse(savedMilestones));
+        }
+
+        // Load Profile (local only)
+        const savedProfile = await AsyncStorage.getItem('@dress_it_up_profile');
+        if (savedProfile !== null) {
+          try {
+            const parsed = JSON.parse(savedProfile);
+            setProfile({ name: parsed.name || '', avatar: parsed.avatar || '' });
+          } catch (e) { /* corrupt profile -> ignore, defaults stay */ }
         }
 
         if (jsonValue != null) {
@@ -1113,7 +1129,11 @@ export default function App() {
               setAchievements(AchievementsManager.getBadges());
               setShowUserProfile(true);
             }}>
-              <Ionicons name="person" size={28} color="#444" />
+              {profile.avatar && BASE_ANIMALS.find(a => a.id === profile.avatar) ? (
+                <Image source={BASE_ANIMALS.find(a => a.id === profile.avatar).source} style={styles.userProfileAvatar} />
+              ) : (
+                <Ionicons name="person" size={28} color="#444" />
+              )}
             </TouchableOpacity>
 
 
@@ -1489,6 +1509,8 @@ export default function App() {
           onToggleMute={handleToggleMute}
           achievements={achievements}
           onUnlockCreatorReward={handleCreatorReward}
+          profile={profile}
+          onSaveProfile={handleSaveProfile}
         />
 
         <SaveModal
@@ -1810,6 +1832,11 @@ const styles = StyleSheet.create({
     elevation: 5,
     borderWidth: 2,
     borderColor: '#fff',
+  },
+  userProfileAvatar: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
   },
   badgePopup: {
     position: 'absolute',
