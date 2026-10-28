@@ -2,7 +2,7 @@
   "expo": {
     "name": "Dress it up!",
     "slug": "dress-it-up",
-    "version": "2.6.0",
+    "version": "2.7.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -23,7 +23,7 @@
       },
       "edgeToEdgeEnabled": true,
       "package": "com.anonymous.dressitup",
-      "versionCode": 20,
+      "versionCode": 21,
       "largeHeap": true
     },
     "web": {

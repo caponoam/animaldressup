@@ -22,6 +22,8 @@ import GemsInfoModal from './components/GemsInfoModal';
 import AudioManager from './utils/AudioManager';
 import AchievementsManager from './utils/AchievementsManager';
 import UserProfileModal from './components/UserProfileModal';
+import DailyModal from './components/DailyModal';
+import DailyManager from './utils/DailyManager';
 
 // DATA DEFINITIONS
 import { BASE_ANIMALS } from './data/animals';
@@ -59,6 +61,13 @@ export default function App() {
   const [wolfTaps, setWolfTaps] = useState(0); // Full Moon Tracker 🐺
   const [petCount, setPetCount] = useState(0); // Petting Tracker 🐾
   const [gems, setGems] = useState(0); // Gems Currency 💎
+
+  // DAILY LOOK + STREAK + GIFT
+  const [dailyVisible, setDailyVisible] = useState(false);
+  const [dailyChallenge, setDailyChallenge] = useState(null);
+  const [dailyTick, setDailyTick] = useState(0); // re-render modal after reward events
+  const dailyInitRef = useRef(false);
+  const dailyAutoShownRef = useRef(false);
   const [isAntiGravity, setIsAntiGravity] = useState(false); // ANIMATION SHARED VALUES
   const gravityOffset = useSharedValue(0);
   const [isMuted, setIsMuted] = useState(true);
@@ -169,6 +178,12 @@ export default function App() {
           } catch (e) { /* corrupt profile -> ignore, defaults stay */ }
         }
 
+        // Daily Look / streak / gift init with this device's owned lists
+        initDaily(
+          JSON.parse(savedUnlocked || '[]'),
+          JSON.parse(savedUnlockedAccessories || '[]')
+        );
+
         if (jsonValue != null) {
           const rawOutfits = JSON.parse(jsonValue);
 
@@ -219,6 +234,30 @@ export default function App() {
     };
     loadOutfits();
   }, []);
+
+  // DAILY: build today's challenge (called from the load effect with owned lists)
+  const initDaily = async (ownedAnimalIds, ownedAccessoryIds) => {
+    if (dailyInitRef.current) return;
+    dailyInitRef.current = true;
+    await DailyManager.init();
+    const ownedAnimals = BASE_ANIMALS.filter(a => !a.cost || ownedAnimalIds.includes(a.id));
+    const usable = (list) => list.filter(i => !i.cost || ownedAccessoryIds.includes(i.id));
+    const challenge = DailyManager.buildChallenge(
+      new Date().toLocaleDateString('en-CA'),
+      ownedAnimals,
+      {
+        top: usable(tops), hat: usable(hats), glasses: usable(glasses),
+        neckwear: usable(neckwear), bottoms: usable(bottoms),
+      }
+    );
+    setDailyChallenge(challenge);
+    if (!dailyAutoShownRef.current) {
+      dailyAutoShownRef.current = true;
+      if (!DailyManager.isChallengeDoneToday() || !DailyManager.isGiftOpenedToday()) {
+        setDailyVisible(true);
+      }
+    }
+  };
 
   const saveOutfitsToStorage = async (newOutfits) => {
     try {
@@ -543,6 +582,36 @@ export default function App() {
 
   // Derived current state from history
   const currentOutfit = history[historyIndex].outfit;
+
+  // DAILY: award when the challenge is met
+  useEffect(() => {
+    if (!dailyChallenge || DailyManager.isChallengeDoneToday()) return;
+    if (selectedAnimalId !== dailyChallenge.animal.id) return;
+    const worn = (currentOutfit || {})[dailyChallenge.item.category] || [];
+    if (!worn.some(i => i.itemId === dailyChallenge.item.id)) return;
+    const award = async () => {
+      const newStreak = await DailyManager.completeChallenge();
+      if (newStreak > 0) {
+        saveGems(gems + 5);
+        AudioManager.playSound('success');
+        setNewBadge({ icon: '🔥', title: `${newStreak} Day Streak!`, reward: 5 });
+        setTimeout(() => setNewBadge(null), 4000);
+        setDailyTick(t => t + 1);
+      }
+    };
+    award();
+  }, [selectedAnimalId, currentOutfit, dailyChallenge]);
+
+  const handleOpenGift = async () => {
+    const amount = await DailyManager.openGift();
+    if (amount > 0) {
+      saveGems(gems + amount);
+      AudioManager.playSound('success');
+      setNewBadge({ icon: '🎁', title: 'Daily Gift!', reward: amount });
+      setTimeout(() => setNewBadge(null), 4000);
+      setDailyTick(t => t + 1);
+    }
+  };
   const currentBackground = history[historyIndex].background;
 
   const addToHistory = (newOutfit, newBackground) => {
@@ -1136,6 +1205,16 @@ export default function App() {
               )}
             </TouchableOpacity>
 
+            {/* DAILY LOOK BUTTON */}
+            <TouchableOpacity
+              style={styles.dailyButton}
+              onPress={() => setDailyVisible(true)}
+            >
+              <Text style={styles.dailyButtonText}>
+                {DailyManager.getStreak() > 0 ? `🔥${DailyManager.getStreak()}` : '✨'}
+              </Text>
+            </TouchableOpacity>
+
 
 
 
@@ -1513,6 +1592,17 @@ export default function App() {
           onSaveProfile={handleSaveProfile}
         />
 
+        <DailyModal
+          key={dailyTick}
+          visible={dailyVisible}
+          onClose={() => setDailyVisible(false)}
+          challenge={dailyChallenge}
+          streak={DailyManager.getStreak()}
+          challengeDone={DailyManager.isChallengeDoneToday()}
+          giftOpened={DailyManager.isGiftOpenedToday()}
+          onOpenGift={handleOpenGift}
+        />
+
         <SaveModal
           visible={isSaveModalVisible}
           onClose={() => { requestAnimationFrame(() => setIsSaveModalVisible(false)); setPendingExit(false); }}
@@ -1832,6 +1922,32 @@ const styles = StyleSheet.create({
     elevation: 5,
     borderWidth: 2,
     borderColor: '#fff',
+  },
+  dailyButton: {
+    position: 'absolute',
+    top: 104,
+    left: I18nManager.isRTL ? undefined : 20,
+    right: I18nManager.isRTL ? 20 : undefined,
+    zIndex: 1001,
+    minWidth: 44,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,107,107,0.92)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    borderWidth: 2,
+    borderColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  dailyButtonText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#fff',
   },
   userProfileAvatar: {
     width: 34,
