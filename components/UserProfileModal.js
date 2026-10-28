@@ -1,5 +1,4 @@
 import React, { useRef, useState, useEffect } from 'react';
-import Constants from 'expo-constants';
 import pkg from '../package.json';
 import { StyleSheet, Text, View, Modal, TouchableOpacity, ScrollView, Pressable, TextInput, Image, KeyboardAvoidingView, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -17,15 +16,17 @@ const sanitizeName = (raw) =>
 
 export default function UserProfileModal({ visible, onClose, isMuted, onToggleMute, achievements, onUnlockCreatorReward, profile, onSaveProfile }) {
     const timerRef = useRef(null);
+    const [editing, setEditing] = useState(false);
     const [nameDraft, setNameDraft] = useState('');
-    const [savedFlash, setSavedFlash] = useState(false);
+    const [avatarDraft, setAvatarDraft] = useState('');
 
     useEffect(() => {
         if (visible) {
+            setEditing(false);
             setNameDraft(profile?.name || '');
-            setSavedFlash(false);
+            setAvatarDraft(profile?.avatar || '');
         }
-    }, [visible, profile?.name]);
+    }, [visible, profile?.name, profile?.avatar]);
 
     const handlePressIn = () => {
         timerRef.current = setTimeout(() => {
@@ -42,20 +43,21 @@ export default function UserProfileModal({ visible, onClose, isMuted, onToggleMu
         }
     };
 
-    const saveName = () => {
-        const clean = sanitizeName(nameDraft);
-        setNameDraft(clean);
-        onSaveProfile({ ...(profile || {}), name: clean });
-        setSavedFlash(true);
-        setTimeout(() => setSavedFlash(false), 1200);
+    const startEdit = () => {
+        setNameDraft(profile?.name || '');
+        setAvatarDraft(profile?.avatar || '');
+        setEditing(true);
     };
 
-    const pickAvatar = (animalId) => {
-        onSaveProfile({ ...(profile || {}), avatar: animalId });
+    const saveEdit = () => {
+        onSaveProfile({ name: sanitizeName(nameDraft), avatar: avatarDraft });
+        setEditing(false);
     };
 
-    const avatarAnimal = BASE_ANIMALS.find(a => a.id === profile?.avatar);
-    const displayName = (profile?.name || '').trim();
+    const startProfile = profile || {};
+    const avatarAnimal = BASE_ANIMALS.find(a => a.id === startProfile.avatar);
+    const draftAnimal = BASE_ANIMALS.find(a => a.id === avatarDraft);
+    const displayName = (startProfile.name || '').trim();
 
     return (
         <Modal
@@ -69,11 +71,11 @@ export default function UserProfileModal({ visible, onClose, isMuted, onToggleMu
                 behavior={Platform.OS === 'ios' ? 'padding' : undefined}
             >
                 <View style={styles.modalContent}>
-                    <TouchableOpacity
-                        style={styles.closeButton}
-                        onPress={onClose}
-                    >
+                    <TouchableOpacity style={styles.closeButton} onPress={onClose}>
                         <Ionicons name="close" size={24} color="#555" />
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.muteButton} onPress={onToggleMute}>
+                        <Ionicons name={isMuted ? "volume-mute" : "volume-high"} size={22} color="#FFD700" />
                     </TouchableOpacity>
 
                     <ScrollView
@@ -83,70 +85,81 @@ export default function UserProfileModal({ visible, onClose, isMuted, onToggleMu
                     >
                         <Text style={styles.modalTitle}>👤 User Profile</Text>
 
-                        {/* MY PROFILE CARD */}
-                        <View style={styles.profileCard}>
-                            <View style={styles.avatarCircle}>
-                                {avatarAnimal ? (
-                                    <Image source={avatarAnimal.source} style={styles.avatarImage} resizeMode="contain" />
-                                ) : (
-                                    <Text style={{ fontSize: 30 }}>👤</Text>
-                                )}
-                            </View>
-                            <Text style={styles.profileName} numberOfLines={1}>
-                                {displayName ? displayName : 'Who are you?'}
-                            </Text>
-                        </View>
-
-                        {/* NAME */}
-                        <Text style={styles.sectionHeader}>✏️ My Name (stays on this device)</Text>
-                        <View style={styles.nameRow}>
-                            <TextInput
-                                style={styles.nameInput}
-                                value={nameDraft}
-                                onChangeText={setNameDraft}
-                                placeholder="Type your name..."
-                                placeholderTextColor="#777"
-                                maxLength={MAX_NAME}
-                                returnKeyType="done"
-                                autoCapitalize="words"
-                                autoCorrect={false}
-                                onSubmitEditing={saveName}
-                                blurOnSubmit={true}
-                            />
-                            <TouchableOpacity style={styles.saveButton} onPress={saveName}>
-                                <Text style={styles.saveButtonText}>{savedFlash ? '✓' : 'Save'}</Text>
-                            </TouchableOpacity>
-                        </View>
-
-                        {/* AVATAR */}
-                        <Text style={styles.sectionHeader}>🐾 Pick a Friend</Text>
-                        <View style={styles.avatarGrid}>
-                            {BASE_ANIMALS.map((animal) => (
-                                <TouchableOpacity
-                                    key={animal.id}
-                                    style={[
-                                        styles.avatarCell,
-                                        profile?.avatar === animal.id && styles.avatarCellSelected,
-                                    ]}
-                                    onPress={() => pickAvatar(animal.id)}
-                                    accessibilityLabel={`Choose ${animal.name} as your avatar`}
-                                >
-                                    <Image source={animal.source} style={styles.avatarCellImage} resizeMode="contain" />
-                                </TouchableOpacity>
-                            ))}
-                        </View>
-
-                        {/* SETTINGS */}
-                        <View style={styles.profileSettingsRow}>
-                            <TouchableOpacity style={styles.settingToggle} onPress={onToggleMute}>
-                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                    <Ionicons name={isMuted ? "volume-mute" : "volume-high"} size={24} color="white" style={{ marginRight: 10 }} />
-                                    <Text style={styles.settingText}>{isMuted ? 'Audio: OFF' : 'Audio: ON'}</Text>
+                        {editing ? (
+                            /* --- EDIT MODE: name + single avatar row --- */
+                            <View style={styles.editCard}>
+                                <View style={styles.editNameRow}>
+                                    <View style={styles.editAvatarCircle}>
+                                        {draftAnimal ? (
+                                            <Image source={draftAnimal.source} style={styles.editAvatarImage} resizeMode="contain" />
+                                        ) : (
+                                            <Text style={{ fontSize: 26 }}>👤</Text>
+                                        )}
+                                    </View>
+                                    <TextInput
+                                        style={styles.nameInput}
+                                        value={nameDraft}
+                                        onChangeText={setNameDraft}
+                                        placeholder="Your name..."
+                                        placeholderTextColor="#777"
+                                        maxLength={MAX_NAME}
+                                        returnKeyType="done"
+                                        autoCapitalize="words"
+                                        autoCorrect={false}
+                                        onSubmitEditing={saveEdit}
+                                        autoFocus={true}
+                                    />
                                 </View>
+                                <ScrollView
+                                    horizontal
+                                    showsHorizontalScrollIndicator={false}
+                                    keyboardShouldPersistTaps="handled"
+                                    contentContainerStyle={styles.avatarRow}
+                                >
+                                    {BASE_ANIMALS.map((animal) => (
+                                        <TouchableOpacity
+                                            key={animal.id}
+                                            style={[
+                                                styles.avatarCell,
+                                                avatarDraft === animal.id && styles.avatarCellSelected,
+                                            ]}
+                                            onPress={() => setAvatarDraft(animal.id)}
+                                            accessibilityLabel={`Choose ${animal.name} as your avatar`}
+                                        >
+                                            <Image source={animal.source} style={styles.avatarCellImage} resizeMode="contain" />
+                                        </TouchableOpacity>
+                                    ))}
+                                </ScrollView>
+                                <View style={styles.editActionsRow}>
+                                    <TouchableOpacity style={styles.cancelButton} onPress={() => setEditing(false)}>
+                                        <Text style={styles.cancelButtonText}>Cancel</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity style={styles.doneButton} onPress={saveEdit}>
+                                        <Text style={styles.doneButtonText}>Done</Text>
+                                    </TouchableOpacity>
+                                </View>
+                                <Text style={styles.privacyHint}>Your name stays on this device</Text>
+                            </View>
+                        ) : (
+                            /* --- VIEW MODE: one quiet card --- */
+                            <TouchableOpacity style={styles.profileCard} onPress={startEdit} activeOpacity={0.7}>
+                                <View style={styles.avatarCircle}>
+                                    {avatarAnimal ? (
+                                        <Image source={avatarAnimal.source} style={styles.avatarImage} resizeMode="contain" />
+                                    ) : (
+                                        <Text style={{ fontSize: 30 }}>👤</Text>
+                                    )}
+                                </View>
+                                <View style={styles.cardTextWrap}>
+                                    <Text style={styles.profileName} numberOfLines={1}>
+                                        {displayName ? displayName : 'Who are you?'}
+                                    </Text>
+                                    <Text style={styles.cardHint}>Tap to edit</Text>
+                                </View>
+                                <Ionicons name="create-outline" size={20} color="#888" />
                             </TouchableOpacity>
-                        </View>
+                        )}
 
-                        {/* BADGES */}
                         <Text style={styles.sectionHeader}>🏆 Badges</Text>
                         {achievements.map((badge) => (
                             <View
@@ -204,39 +217,96 @@ const styles = StyleSheet.create({
         fontSize: 24,
         color: '#FFD700',
         fontWeight: 'bold',
-        marginBottom: 12,
+        marginBottom: 14,
         alignSelf: 'center',
     },
+    closeButton: {
+        position: 'absolute',
+        top: 15,
+        right: 15,
+        padding: 5,
+        zIndex: 10,
+        backgroundColor: 'rgba(255,255,255,0.1)',
+        borderRadius: 20,
+    },
+    muteButton: {
+        position: 'absolute',
+        top: 15,
+        left: 15,
+        padding: 6,
+        zIndex: 10,
+        backgroundColor: 'rgba(255,255,255,0.1)',
+        borderRadius: 20,
+    },
     profileCard: {
+        flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 12,
         width: '100%',
+        backgroundColor: 'rgba(255,255,255,0.06)',
+        borderRadius: 16,
+        paddingVertical: 12,
+        paddingHorizontal: 14,
+        marginBottom: 14,
+        borderWidth: 1,
+        borderColor: 'rgba(255,215,0,0.35)',
     },
     avatarCircle: {
-        width: 72,
-        height: 72,
-        borderRadius: 36,
-        backgroundColor: 'rgba(255,215,0,0.15)',
+        width: 56,
+        height: 56,
+        borderRadius: 28,
+        backgroundColor: 'rgba(255,215,0,0.12)',
         borderWidth: 2,
         borderColor: '#FFD700',
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: 6,
     },
     avatarImage: {
-        width: 60,
-        height: 60,
+        width: 46,
+        height: 46,
+    },
+    cardTextWrap: {
+        flex: 1,
+        marginHorizontal: 12,
     },
     profileName: {
         color: 'white',
         fontSize: 18,
         fontWeight: 'bold',
     },
-    nameRow: {
-        flexDirection: 'row',
+    cardHint: {
+        color: '#888',
+        fontSize: 12,
+        marginTop: 2,
+    },
+    editCard: {
         width: '100%',
+        backgroundColor: 'rgba(255,255,255,0.06)',
+        borderRadius: 16,
+        paddingVertical: 12,
+        paddingHorizontal: 12,
         marginBottom: 12,
+        borderWidth: 1,
+        borderColor: 'rgba(255,215,0,0.35)',
+    },
+    editNameRow: {
+        flexDirection: 'row',
         alignItems: 'center',
+        marginBottom: 10,
+    },
+    editAvatarCircle: {
+        width: 46,
+        height: 46,
+        borderRadius: 23,
+        backgroundColor: 'rgba(255,215,0,0.12)',
+        borderWidth: 2,
+        borderColor: '#FFD700',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginEnd: 10,
+    },
+    editAvatarImage: {
+        width: 38,
+        height: 38,
     },
     nameInput: {
         flex: 1,
@@ -249,29 +319,16 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#555',
     },
-    saveButton: {
-        marginLeft: 8,
-        backgroundColor: '#FFD700',
-        borderRadius: 10,
-        paddingHorizontal: 14,
-        paddingVertical: 11,
-    },
-    saveButtonText: {
-        color: '#333',
-        fontWeight: 'bold',
-        fontSize: 14,
-    },
-    avatarGrid: {
+    avatarRow: {
         flexDirection: 'row',
-        flexWrap: 'wrap',
-        justifyContent: 'center',
-        marginBottom: 8,
+        paddingVertical: 4,
+        marginBottom: 4,
     },
     avatarCell: {
-        width: 52,
-        height: 52,
-        borderRadius: 26,
-        margin: 4,
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        marginHorizontal: 4,
         backgroundColor: 'rgba(255,255,255,0.07)',
         justifyContent: 'center',
         alignItems: 'center',
@@ -283,35 +340,50 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(255,215,0,0.18)',
     },
     avatarCellImage: {
-        width: 42,
-        height: 42,
+        width: 40,
+        height: 40,
     },
-    profileSettingsRow: {
-        width: '100%',
-        marginBottom: 10,
-        borderBottomWidth: 1,
-        borderBottomColor: '#555',
-        paddingBottom: 5,
+    editActionsRow: {
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        marginTop: 6,
+    },
+    cancelButton: {
+        paddingVertical: 8,
+        paddingHorizontal: 16,
+        borderRadius: 10,
+        marginRight: 8,
+    },
+    cancelButtonText: {
+        color: '#aaa',
+        fontSize: 14,
+        fontWeight: '600',
+    },
+    doneButton: {
+        backgroundColor: '#FFD700',
+        borderRadius: 10,
+        paddingHorizontal: 22,
+        paddingVertical: 9,
+    },
+    doneButtonText: {
+        color: '#333',
+        fontWeight: 'bold',
+        fontSize: 14,
+    },
+    privacyHint: {
+        color: '#777',
+        fontSize: 11,
+        textAlign: 'center',
+        marginTop: 8,
+        fontStyle: 'italic',
     },
     sectionHeader: {
         color: '#aaa',
         fontSize: 12,
         fontWeight: 'bold',
-        marginBottom: 5,
+        marginBottom: 6,
         textTransform: 'uppercase',
         alignSelf: 'flex-start',
-    },
-    settingToggle: {
-        backgroundColor: 'rgba(255,255,255,0.1)',
-        paddingVertical: 8,
-        paddingHorizontal: 12,
-        borderRadius: 8,
-        alignItems: 'center',
-    },
-    settingText: {
-        color: 'white',
-        fontSize: 16,
-        fontWeight: 'bold',
     },
     badgeRow: {
         flexDirection: 'row',
@@ -347,15 +419,6 @@ const styles = StyleSheet.create({
     badgeDesc: {
         color: '#ccc',
         fontSize: 11,
-    },
-    closeButton: {
-        position: 'absolute',
-        top: 15,
-        right: 15,
-        padding: 5,
-        zIndex: 10,
-        backgroundColor: 'rgba(255,255,255,0.1)',
-        borderRadius: 20,
     },
     versionText: {
         color: '#555',
